@@ -1,0 +1,72 @@
+metrics:    # metrics for every users
+  tpas:
+    description: "Our accuracy is TPAS - The Travel Plan Accuracy Score. This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output, well-scheduled travel plan and nothing else. The TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating non-accurate result."
+
+users:    # by default all users are relevant
+  nomad:
+    name: "Busy Nomad in Seattle"
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    description: "You're a very busy nomad who struggles with planning. You're moved to Seattle and looking at how to spend your first Saturday exploring the city"
+    expectation: "Well-planned objective, detailed, and comprehensive schedule that meets user's requirements"
+    user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
+    metrics: __all__
+
+  family_weekend:
+    name: "The Adventurous Family from Chicago"
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    description: "You're a family of four (two adults and two children) based in Chicago looking to plan an exciting, yet relaxed weekend getaway outside the city. The objective is to explore a new environment that is kid-friendly and offers a mix of adventure and downtime."
+    expectation: "A balanced travel schedule that combines fun activities suitable for children and relaxation opportunities for the entire family, considering travel times and kid-friendly amenities."
+    user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
+    metrics: __all__
+
+  retired_couple:
+    name: "Retired Couple Exploring Berlin"
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    description: "You're a retired couple from the US, wanting to explore Berlin and soak in its rich history and culture over a 10-day vacation. You’re looking for a mixture of sightseeing, cultural experiences, and leisure activities, with a comfortable pace suitable for your age."
+    expectation: "A comprehensive travel plan that provides a relaxed pace, ensuring enough time to explore and enjoy each location, and includes historical and cultural experiences. It should also consider comfort and accessibility."
+    user_knowledge_about_app: "The app accepts text input detailing travel requirements (i.e., destination, preferences, duration, and a brief description of travelers) and returns a well-organized travel itinerary tailored to those specifics."
+    metrics: __all__
+
+prompts:
+  smart-prompt:
+    file: ./smart-prompt
+    # "template" instead of "file" to pass prompt directly
+  simple-prompt:
+    file: ./simple-prompt
+  wrong-prompt:
+    file: ./wrong-prompt
+
+
+
+simulations:
+  smart-prompt-test:
+    prompt: smart-prompt
+    users: __all__
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    size: 5
+    chat_mode: true
+    quality_threshold: 80
+
+  mid-prompt-test:
+    prompt: simple-prompt
+    users: __all__
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    size: 5
+    chat_mode: true
+    quality_threshold: 80
+
+  wrong-prompt-test:
+    prompt: wrong-prompt
+    users: __all__
+    llm_name: gpt-3.5-turbo
+    temperature: 0.7
+    size: 5
+    chat_mode: true
+    quality_threshold: 80
+
+include_spelltest_simulations: true
