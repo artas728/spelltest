@@ -35,21 +35,8 @@ def spelltest_async_together(
     tasks = []
     for _ in range(size):
         for user_persona_manager in user_persona_managers:
-            synthetic_user = user_persona_manager.user
-            if type(synthetic_user) is tuple:
-                a = 1
-            simulation_lab_job_id = _run_simulation_lab_job(
-                openai_api_key=openai_api_key,
-                metric_definitions=synthetic_user.metrics,
-                target_prompt=target_prompt,
-                default_llm=llm_name,
-                chat_mode=mode,
-                synthetic_user=synthetic_user
-            )
-
             if not evaluation_manager:
                 evaluation_manager = EvaluationManager(
-                    simulation_lab_job_id=simulation_lab_job_id,
                     metric_definitions=user_persona_manager.metrics,
                     openai_api_key=openai_api_key,
                     synthetic_user_persona_manager=user_persona_manager,
@@ -58,8 +45,6 @@ def spelltest_async_together(
                     llm_name_rationale=evaluation_llm_name_rationale if evaluation_llm_name_rationale else evaluation_llm_name,
                     llm_name_accuracy=evaluation_llm_name_accuracy if evaluation_llm_name_accuracy else evaluation_llm_name,
                 )
-                evaluation_manager.setup_simulation_lab_job_id(simulation_lab_job_id)
-            user_persona_manager.setup_simulation_lab_job_id(simulation_lab_job_id)
             tasks.append(_asimulate(app_manager,
                                     user_persona_manager,
                                     evaluation_manager,
@@ -97,7 +82,7 @@ async def _asimulate(
         evaluations: List[EvaluationResult] = await evaluation_manager.evaluate_raw_completion(
             prompt,
             completion,
-            app_manager,
+            # app_manager,
             user_persona_manager)
         return Simulation(
             prompt_version_id=app_manager.prompt_version_id,    #app_manager.target_prompt.promptelligence_params.db_version_id,
@@ -111,41 +96,6 @@ async def _asimulate(
     else:
         raise Exception(f"Unexpected mode: {mode}")
 
-def _run_simulation_lab_job(
-        openai_api_key,
-        metric_definitions,
-        target_prompt,
-        default_llm,
-        chat_mode,
-        synthetic_user=None,
-) -> str:
-    try:
-        header = {
-            "Content-Type": "application/json",
-            "Authorization": f"Api-Key {SPELLFORGE_API_KEY}",
-        }
-        simulation_lab_job_id = str(uuid.uuid4())
-        data = {
-            "synthetic_user":  asdict(synthetic_user) if synthetic_user is not None else None,
-            "metric_definitions": [asdict(m) for m in metric_definitions],
-            "openai_api_key": openai_api_key,
-            "simulation_lab_job_id": simulation_lab_job_id,
-            "target_prompt": target_prompt,
-            "default_llm": default_llm,
-            "chat_mode": True if chat_mode is Mode.CHAT else False,
-        }
-        session = httpx.Client()
-        response = session.post(
-            SPELLFORGE_HOST + "api/start-simulation/", json=data, headers=header
-        )
-        response.raise_for_status()
-    except httpx.HTTPStatusError as e:
-        print(f"Error response: {e.response.content}")
-        raise e
-    except Exception as e:
-        print(str(e))
-        raise e
-    return response.json()["id"]
 
 async def _generate_chat(app_chat_manager, user_persona_manager, max_messages):
     app_message = await app_chat_manager.initialize_conversation()

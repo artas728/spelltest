@@ -1,5 +1,5 @@
+import json
 import os
-import httpx
 from typing import Dict
 from langchain import PromptTemplate as DefaultPromptTemplate
 from langchain.llms import OpenAI
@@ -11,7 +11,7 @@ from ..entities.synthetic_user import SyntheticUser
 from ..utils import extract_fields, load_prompt
 
 
-SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
+SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "https://spellforge.ai/")
 SPELLFORGE_API_KEY = os.environ.get("SPELLFORGE_API_KEY")
 
 
@@ -30,36 +30,46 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
             )
         else:
             raise Exception(f"Unexpected type of target_prompt: {type(target_prompt)}")
-        self.base_url = SPELLFORGE_HOST
-        self.header = {
-            "Content-Type": "application/json",
-            "Authorization": f"Api-Key {SPELLFORGE_API_KEY}",
-        }
-        self._session = httpx.AsyncClient()
-        super().__init__(*args, **kwargs)
-        self.simulation_lab_job_id = None
+        self.system_prompt = TracedPromptTemplate(
+            template=load_prompt(
+                "completion_manager/system.completion_user_agent.txt.jinja2"
+            ),
+            template_format="jinja2",
+            input_variables=["APP_DESCRIPTION", "USER_DESCRIPTION", "input_variables", "target_prompt"],
+            alias="Synthetic user default completion system prompt"
+        )
 
-    def setup_simulation_lab_job_id(self, simulation_lab_job_id):
-        self.simulation_lab_job_id = simulation_lab_job_id
+        self.tracing_layer = PromptelligenceTracer(prompt=self.system_prompt)
+
+        llm = OpenAI(openai_api_key=openai_api_key, model_name=user.params.llm_name)
+        self.chain = CustomLLMChain(
+            llm=llm,
+            prompt=self.system_prompt,
+        )
+        super().__init__(*args, **kwargs)
 
     async def generate_user_input(self) -> Message:
-        user_response_message = await self._request_user_input()
-        return Message(**user_response_message)
+        for _ in range(self.USER_INPUT_ATTEMPTS):
+            try:
+                response = await self.chain.arun(
+                    APP_DESCRIPTION=self.user.params.user_knowledge_about_app,
+                    USER_DESCRIPTION=self.user.params.description,
+                    input_variables=self.target_prompt.input_variables,
+                    target_prompt=self.target_prompt.template,
+                    callbacks=[
+                        self.tracing_layer
+                    ],
+                )
+                json.loads(response["text"])
+                return Message(
+                    author=MessageType.USER,
+                    text=response["text"],
+                    run_id=str(response["__run"].run_id)
+                )
+            except json.decoder.JSONDecodeError as json_error:
+                print(str(json_error))
+        raise Exception(f"Expected JSON format from LLM but got {response}")
 
-    async def _request_user_input(self):
-        try:
-            data = {"simulation_lab_job_id": self.simulation_lab_job_id}
-            response = await self._session.post(
-                self.base_url + "api/generate-user-input/", json=data, headers=self.header
-            )
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            print(f"Error response: {e.response.content}")
-            raise e
-        except Exception as e:
-            print(str(e))
-            raise e
-        return response.json()
 
 class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
     def __init__(self, target_prompt, llm_name, openai_api_key, *args, **kwargs):

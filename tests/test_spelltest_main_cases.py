@@ -127,34 +127,32 @@ def mock_init(original_init, behavior_func):
 # Define behavior functions for each class:
 
 def behavior_for_evaluation_manager(instance):
-    # instance.perfect_chat_response_key = "text"
-    # # mock perfect chat message
-    # responses = ["bla bla bla bla"]
-    # llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
-    # instance.perfect_chat_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_chat_prompt)
-    #
-    # # mock perfect_completion_chain
-    # responses = ["bla bla bla bla"]
-    # llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
-    # instance.perfect_completion_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_completion_prompt)
-    #
-    # # mock accuracy chain
-    # responses = ["0.78"]
-    # llm = FakeListLLM(responses=responses, model_name=instance.llm_name_accuracy)
-    # instance.accuracy_chain = CustomLLMChain(llm=llm, prompt=instance.accuracy_prompt)
-    #
-    # # rationale chain
-    # rationale_responses = ["rationale"]
-    # rationale_llm = FakeListLLM(responses=rationale_responses, model_name=instance.llm_name_rationale)
-    # instance.rationale_chain = CustomLLMChain(llm=rationale_llm, prompt=instance.rationale_prompt)
-    pass
+    instance.perfect_chat_response_key = "text"
+    # mock perfect chat message
+    responses = ["bla bla bla bla"]
+    llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
+    instance.perfect_chat_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_chat_prompt)
+
+    # mock perfect_completion_chain
+    responses = ["bla bla bla bla"]
+    llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
+    instance.perfect_completion_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_completion_prompt)
+
+    # mock accuracy chain
+    responses = ["0.78"]
+    llm = FakeListLLM(responses=responses, model_name=instance.llm_name_accuracy)
+    instance.accuracy_chain = CustomLLMChain(llm=llm, prompt=instance.accuracy_prompt)
+
+    # rationale chain
+    rationale_responses = ["rationale"]
+    rationale_llm = FakeListLLM(responses=rationale_responses, model_name=instance.llm_name_rationale)
+    instance.rationale_chain = CustomLLMChain(llm=rationale_llm, prompt=instance.rationale_prompt)
 
 def behavior_for_synthetic_user_chat_manager(instance):
     # Define custom behavior for SyntheticUserChatManager
-    # responses = ["Action: Python REPL\nAction Input: print(2 + 2)" for i in range(1)]
-    # llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)
-    # instance.chain = CustomConversationChain(llm=llm, prompt=instance.system_prompt)
-    pass
+    responses = ["synthetic user chat manager llm fake output" for _ in range(1)]
+    llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)
+    instance.chain = CustomConversationChain(llm=llm, prompt=instance.system_prompt)
 
 def behavior_for_ai_model_default_chat_manager(instance):
     # Define custom behavior for AIModelDefaultChatManager
@@ -168,10 +166,9 @@ def behavior_for_ai_model_default_completion_manager(instance):
     instance.chain = CustomLLMChain(llm=llm, prompt=instance.system_prompt)
 
 def behavior_for_synthetic_user_completion_manager(instance):
-    # responses = [json.dumps({"Action": "Synthetic user default completion manager llm fake output"})]
-    # llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)
-    # instance.chain = CustomLLMChain(llm=llm, prompt=instance.system_prompt)
-    pass
+    responses = [json.dumps({"Action": "Synthetic user default completion manager llm fake output"})]
+    llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)
+    instance.chain = CustomLLMChain(llm=llm, prompt=instance.system_prompt)
 
 @pytest.fixture
 def setup_manager():

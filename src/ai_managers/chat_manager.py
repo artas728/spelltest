@@ -1,6 +1,5 @@
 import os
-import httpx
-from dataclasses import asdict
+from typing import List
 from uuid import uuid4
 from langchain.llms import OpenAI
 from langchain.memory import ConversationBufferWindowMemory
@@ -15,47 +14,71 @@ from ..tracing.promtelligence_tracing import PromptTemplate, PromptelligenceTrac
 SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
 SPELLFORGE_API_KEY = os.environ.get("SPELLFORGE_API_KEY")
 
-
 class SyntheticUserChatManager(ChatManagerBase):
     def __init__(self, user: SyntheticUser, openai_api_key):
         self.user = user
         self.metrics = user.metrics
         self.openai_api_key = openai_api_key
         self.chat_id = str(uuid4())
-        self.base_url = SPELLFORGE_HOST
-        self.header = {
-            "Content-Type": "application/json",
-            "Authorization": f"Api-Key {SPELLFORGE_API_KEY}",
-        }
-        self._session = httpx.AsyncClient()
-        self.simulation_lab_job_id = None
-    #     super().__init__(role=MessageType.USER, opposite_role=MessageType.ASSISTANT)
+        system_pre_prompt = PromptTemplate(
+            template=load_prompt("chat_manager/system.chat_user_agent.txt.jinja2"),
+            template_format="jinja2",
+            input_variables=[
+                "APP_DESCRIPTION",
+                "USER_DESCRIPTION",
+            ],
+            alias="Synthetic user system prompt"
+        )
+        system_prompt_text = system_pre_prompt.format_prompt(
+            APP_DESCRIPTION=self.user.params.description,
+            USER_DESCRIPTION=self.user.params.user_knowledge_about_app
+        ).text
+        self.system_prompt = PromptTemplate(
+            template=system_prompt_text,
+            input_variables=["history", "input"],
+            parent_alias=system_pre_prompt.alias,
+        )
+        self.tracing_layer = PromptelligenceTracer(prompt=system_pre_prompt)
+        llm = OpenAI(openai_api_key=openai_api_key, model_name=self.user.params.llm_name)
+        self.chain = CustomConversationChain(llm=llm, prompt=self.system_prompt)
+        super().__init__(role=MessageType.USER, opposite_role=MessageType.ASSISTANT)
 
     async def initialize_conversation(self, app_welcome_message: Message) -> Message:
-        return await self.next_message(app_welcome_message)
-
-    async def next_message(self, app_message: Message = None) -> Message:
-        user_response_message = await self._request_next_message(app_message)
-        return Message(**user_response_message)
-
-    async def _request_next_message(self, data):
-        message = asdict(data)
-        message["author"] = data.author.value
-        if not self.simulation_lab_job_id:
-            raise Exception("Setup simulation_lab_job_id first")
-        message["simulation_lab_job_id"] = self.simulation_lab_job_id
-        try:
-            response = await self._session.post(
-                self.base_url + "api/generate-next-message/", json=message, headers=self.header
+        if app_welcome_message:
+            self.chat_history.append(app_welcome_message)
+        user_response = await self.chain.arun(
+                history=prep_history(self.chat_history),
+                input=app_welcome_message.text,
+                callbacks=[self.tracing_layer],
             )
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            print(f"Error response: {e.response.content}")
-            raise e
-        except Exception as e:
-            print(str(e))
-            raise e
-        return response.json()
+        user_response_message = Message(
+            author=MessageType.USER,
+            text=user_response["response"].split("> AI:")[0],
+            run_id=str(user_response["__run"].run_id)
+        )
+        self.chat_history.append(user_response_message)
+        self.state = ConversationState.STARTED
+        return user_response_message
+
+    async def next_message(self, app_message: Message = None, chat_history: List[Message] = None) -> Message:
+        if app_message and not chat_history:
+            self.chat_history.append(app_message)
+        user_response = await self.chain.arun(
+            history=prep_history(self.chat_history if not chat_history else chat_history),
+            input=app_message.text,
+            callbacks=[self.tracing_layer],
+        )
+        user_response_message = Message(
+            author=MessageType.USER,
+            text=user_response["response"].split("> AI:")[0],
+            run_id=str(user_response["__run"].run_id)
+        )
+        if not chat_history:
+            self.chat_history.append(user_response_message)
+        if "FINISHED" in user_response_message.text:
+            user_response_message.text.replace("FINISHED", "")
+            self.finish()
+        return user_response_message
 
     def finish(self):
         """

@@ -15,7 +15,6 @@ tracing = PromptelligenceClient()
 @pytest.fixture
 def setup_manager():
     manager = EvaluationManager(
-        simulation_lab_job_id=str(uuid.uuid4()),
         metric_definitions=[Mock()],
         openai_api_key='test_api_key',
         synthetic_user_persona_manager=Mock(),

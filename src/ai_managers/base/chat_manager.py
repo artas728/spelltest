@@ -20,9 +20,6 @@ class ChatManagerBase(ABC):
         if not hasattr(self, "prompt_version_id"):
             raise TypeError(f"Instances of {self.__class__.__name__} must have a `prompt_version_id` attribute.")
 
-    def setup_simulation_lab_job_id(self, simulation_lab_job_id):
-        self.simulation_lab_job_id = simulation_lab_job_id
-
     @abstractmethod
     def initialize_conversation(self):
         """

@@ -3,9 +3,6 @@ from ...entities.managers import EvaluationResult
 
 class EvaluationManagerBase(ABC):
 
-    def setup_simulation_lab_job_id(self, simulation_lab_job_id):
-        self.simulation_lab_job_id = simulation_lab_job_id
-
     @abstractmethod
     async def evaluate_chat(self, *args, **kwargs) -> EvaluationResult:
         """

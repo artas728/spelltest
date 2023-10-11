@@ -14,3 +14,4 @@ streamlit-chat==0.1.1
 openai==0.27.8
 matplotlib==3.7.2
 uniplot==0.10.0
+pytest_asyncio==0.21.1

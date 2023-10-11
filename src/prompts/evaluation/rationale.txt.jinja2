@@ -1,0 +1,29 @@
+As a text accuracy evaluator, your task is to assess the accuracy of a given text in comparison to a provided perfect text, based on the given accuracy definition:
+```accuracy-definition
+{{ ACCURACY_DEFINITION }}
+```
+
+You will be provided with a user input, a result, and a perfect text for comparison:
+```user-input
+{{ USER_INPUT }}
+
+Here is user expectations:
+{{ USER_EXPECTATION }}
+
+```
+Result to evaluate:
+```result-to-evaluate
+{{ REAL_RESULT }}
+
+```
+The perfect result to evaluate the distance from:
+```perfect_result
+{{ PERFECT_RESULT }}
+
+```
+In your response, please include a comprehensive evaluation of the accuracy of the given text, along with a rationale for your evaluation. Compare the given text to the perfect text and explain any deviations in terms of the positive and negative factors described in the accuracy definition. Assess the importance of these factors from the perspective of the accuracy definition.
+In your evaluation DO NOT COMPARE text and perfect text directly. You MUST to evaluate how they relevant to accuracy definition independently from each other. It's fine if text and perfect text have different meaning.
+You MUST constructively self-criticize about how your evaluation relevant to accuracy definition.
+Your evaluation should be objective, thorough, and consider different types of texts and errors that may be present.
+You MUST constructively self-criticize about how your evaluation relevant to accuracy definition.
+Please note that you should provide detailed and specific feedback, highlighting the strengths and weaknesses of the given text with respect to its accuracy.
