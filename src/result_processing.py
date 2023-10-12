@@ -1,4 +1,6 @@
 import os
+import time
+import uuid
 from dataclasses import asdict
 
 import requests
@@ -14,37 +16,54 @@ SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
 SPELLFORGE_API_KEY = os.environ.get("SPELLFORGE_API_KEY")
 
 def process_simulation_result(
+        project_name: str,
         simulations: List[Simulation],
         llm_name,
         size: int,
+        temperature: float,
         reason: str,
         reason_value: str
 ):
-    return ProcessSimulationResult(simulations, llm_name, size, reason, reason_value).process()
+    return ProcessSimulationResult(project_name, simulations, llm_name, size, temperature, reason, reason_value).process()
 
 
 class ProcessSimulationResult:
-
+    RESULT_FOLDER_NAME = "spelltest_result"
+    ANSI_COLORS = {
+        "red": "\033[91m",
+        "green": "\033[92m",
+        "yellow": "\033[93m",
+        "blue": "\033[94m",
+        "magenta": "\033[95m",
+        "cyan": "\033[96m",
+        "white": "\033[97m",
+        "reset": "\033[0m"
+    }
     def __init__(self,
+                 project_name: str,
                  simulations: List[Simulation],
                  llm_name: str,
                  size: int,
+                 temperature: float,
                  reason: str,
                  reason_value: str,
                  status: str = "SUCCESS"
                  ):
+        self.project_name = project_name
         self.simulations = simulations
         self.llm_name = llm_name
         self.size = size
+        self.temperature = temperature
         self.reason = reason
         self.reason_value = reason_value
         self.status = status
         self.prompt_version_id = self.simulations[0].prompt_version_id
         self.app_user_persona_ids = list(set([simulation.app_user_persona_id for simulation in self.simulations]))
 
-    def process(self) -> SimulationJobResult:
+    def process(self):
         self.aggregated_metrics = self.calculate_aggregated_metrics()
-        return self.create_simulation_job()
+        self.print_simulation_job_result()
+        self.save_simulation_job_result()
 
     def calculate_aggregated_metrics(self):
         # Initialize sums and accuracy lists
@@ -81,36 +100,56 @@ class ProcessSimulationResult:
         }
         return Metric(**aggregated_metrics)
 
-    def create_simulation_job(self):
-        simulation_job_data = self.simulation_job_as_dict()
-        headers = {"Authorization": f"Api-Key {SPELLFORGE_API_KEY}", "Content-Type": "application/json"}
-        response = requests.post(f"{SPELLFORGE_HOST}api/simulation-jobs/", data=json.dumps(simulation_job_data), headers=headers)
-        if response.status_code == 201:
-            return response.json()
-        else:
-            raise Exception(f"Error creating simulation job: {response.text}")
+    def print_simulation_job_result(self):
 
-    def simulation_job_as_dict(self):
-        """
-        Convert the dataclass instance to a dictionary for HTTP request
-        """
-        simulation_job_result = SimulationJobResult(
-            prompt_version_id=self.prompt_version_id,
-            app_user_persona_ids=self.app_user_persona_ids,
+        # Header
+        print(f"{self.ANSI_COLORS['cyan']}📊 {'=' * 23} Simulation Results"
+              f"{'=' * 23} 📊{self.ANSI_COLORS['reset']}\n")
+
+        # General Statistics
+        print(f"{self.ANSI_COLORS['yellow']}📈 General Statistics:{self.ANSI_COLORS['reset']}")
+        stats = [
+            ("🎯 Mean Accuracy", self.aggregated_metrics.accuracy),
+            ("📏 Deviation", self.aggregated_metrics.accuracy_deviation),
+        ]
+
+        max_label_length = max(len(label) for label, _ in stats)
+        for label, value in stats:
+            print(f"{label.ljust(max_label_length)}: {value * 100:.2f} of 1.00"
+                  if "Deviation" not in label else f"{label.ljust(max_label_length)}: {value * 100:.2f}")
+
+        # Individual Simulations
+        print("\n" + "🔚" + "=" * 58 + "🔚")
+
+    def save_simulation_job_result(self):
+        self.simulation_job_data = SimulationJobResult(
+            project_name=self.project_name,
             aggregated_metrics=self.aggregated_metrics,
             simulations=self.simulations,
-            llm_name=self.llm_name,  # Need to determine how this is set
+            llm_name=self.llm_name,
             size=self.size,
-            temperature=0.7,  # Need to determine how this is set
+            temperature=self.temperature,
             reason=self.reason,
             reason_value=self.reason_value,
             status=self.status
         )
+        # Retrieve the ID from the dictionary
+        test_id = str(uuid.uuid4())
 
-        # Convert the dataclass instance to a dictionary for HTTP request
-        simulation_job_data = asdict(simulation_job_result)
-        for simulation in simulation_job_data["simulations"]:
-            for evaluation in simulation["evaluations"]:
-                evaluation["metric_definition_id"] = evaluation.pop("metric")["db_id"]
-        return simulation_job_data
+        # Get the current time in a human-readable and file-system-friendly format
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+        # Construct the filename
+        filename = f"{self.project_name}_{timestamp}_{test_id}.json"
+
+        folder_path = os.path.join(self.RESULT_FOLDER_NAME, self.project_name)
+
+        # Check if the folder exists, if not, create it
+        os.makedirs(folder_path, exist_ok=True)
+
+        # Save the dictionary to a file in JSON format
+        file_path = os.path.join(folder_path, filename)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(asdict(self.simulation_job_data), f, ensure_ascii=False, indent=4)
+
 
