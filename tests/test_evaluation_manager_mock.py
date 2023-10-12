@@ -1,3 +1,4 @@
+import os
 import uuid
 from typing import List
 import uuid
@@ -9,8 +10,8 @@ from src.tracing.promtelligence_tracing import PromptelligenceClient
 from src.ai_managers.raw_completion_manager import CustomLLMChain
 from langchain.llms.fake import FakeListLLM
 
-
-tracing = PromptelligenceClient()
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+tracing = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
 
 @pytest.fixture
 def setup_manager():

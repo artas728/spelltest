@@ -6,8 +6,9 @@ from .simulation import Simulation
 
 @dataclass
 class SimulationJobResult:
-    prompt_version_id: int
-    app_user_persona_ids: List[int]
+    # prompt_version_id: int
+    # app_user_persona_ids: List[int]
+    project_name: str
     aggregated_metrics: Metric
     simulations: List[Simulation]
     llm_name: str
@@ -16,6 +17,3 @@ class SimulationJobResult:
     reason: str
     reason_value: str
     status: str
-
-    def print(self):
-        pass

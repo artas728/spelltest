@@ -16,7 +16,8 @@ from .spelltest_execution import spelltest_async_together
 from .tracing.promtelligence_tracing import PromptelligenceClient
 
 DEFAULT_LLM = 'gpt-3.5-turbo'
-tracing_client = PromptelligenceClient()
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+tracing_client = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
 
 
 def spelltest(*args, **kwargs):
@@ -29,6 +30,7 @@ def spelltest(*args, **kwargs):
 
 
 def spelltest_run_simulation(
+        project_name: str = "default",
         prompt: str = None,
         users: List[SyntheticUser] = None,
         openai_api_key: str = os.environ.get("OPENAI_API_KEY"),
@@ -106,9 +108,11 @@ def spelltest_run_simulation(
         evaluation_llm_name_accuracy=evaluation_llm_name_accuracy,
     )
     return process_simulation_result(
+        project_name=project_name,
         simulations=simulation_result,
         llm_name=llm_name,
         size=size,
+        temperature=temperature,
         reason=reason,
         reason_value=reason_value
     )

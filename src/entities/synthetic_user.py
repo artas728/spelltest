@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from .metric import MetricDefinition
 from typing import List
 
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
 SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
 SPELLFORGE_API_KEY = os.environ.get("SPELLFORGE_API_KEY")
 
@@ -26,7 +27,8 @@ class SyntheticUser:
                        init=False)  # Using field to make it clear that db_id shouldn't be passed during initialization
 
     def __post_init__(self):
-        self._synchronise_with_db()
+        if not IGNORE_DATA_COLLECTING:
+            self._synchronise_with_db()
 
     def _synchronise_with_db(self):
         headers = {"Authorization": f"Api-Key {SPELLFORGE_API_KEY}"}

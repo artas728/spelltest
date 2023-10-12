@@ -61,7 +61,8 @@ class PromptTemplate(DefaultPromptTemplate):
                 "You have to initialize PromptelligenceClient before calling any PromptTemplate"
             )
         super().__init__(**kwargs)
-        client.sync_prompt(self)
+        if not client.ignore_tracing:
+            client.sync_prompt(self)
 
     def format(self, **kwargs: Any) -> str:
         """Format the prompt with the inputs and log the usage to LangChainClient."""
@@ -79,21 +80,27 @@ class PromptelligenceClient:
         api_key: str or None = None,
         environment: str or None = None,
         base_url: str = "http://127.0.0.1:8000",
+        ignore: bool = False
     ):
         self.project_name = project
         self.environment = environment
-        self.base_url = base_url
-        if not api_key:
-            api_key = os.environ.get("PROMTELLIGENCE_API_KEY")
-        self.header = {
-            "Content-Type": "application/json",
-            "Authorization": f"Api-Key {api_key}",
-        }
-        self._session = requests.Session()
-        atexit.register(self._cleanup)
-        self._get_or_create_project()
-        self.uploaded_prompts = {}
-        self._upload_prompts()
+        if ignore:
+            self.ignore_tracing = True
+        else:
+            self.ignore_tracing = False
+            self.base_url = base_url
+            if not api_key:
+                api_key = os.environ.get("PROMTELLIGENCE_API_KEY")
+            self.header = {
+                "Content-Type": "application/json",
+                "Authorization": f"Api-Key {api_key}",
+            }
+            self._session = requests.Session()
+            atexit.register(self._cleanup)
+            self._get_or_create_project()
+            self.uploaded_prompts = {}
+            self._upload_prompts()
+
         global client
         client = self
 
@@ -268,6 +275,8 @@ class PromptelligenceTracer(BaseCallbackHandler, ABC):
         parent_run_id: Optional = None,
         **kwargs: Any,
     ) -> Any:
+        if client.ignore:
+            return
         if bool(os.environ.get("PYTEST_RUN_CONFIG", 'False')) is True:
             kwargs["invocation_params"]["model_name"] = "text-davinci-003"
         for prompt in prompts:
@@ -286,6 +295,8 @@ class PromptelligenceTracer(BaseCallbackHandler, ABC):
         self, response: LLMResult, run_id, parent_run_id: Optional = None, **kwargs: Any
     ) -> None:
         """End a trace for an LLM run."""
+        if client.ignore:
+            return
         if bool(os.environ.get("PYTEST_RUN_CONFIG", 'False')) is True and response.llm_output is None:
             response.llm_output = {"model_name": "text-davinci-003", "token_usage": None}
         previous_generations_token_length = 0

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from src.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
 from src.entities.managers import Message, MessageType
@@ -6,8 +8,8 @@ from src.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaul
 from src.tracing.promtelligence_tracing import PromptelligenceClient
 from langchain.llms.fake import FakeListLLM
 
-
-tracing = PromptelligenceClient()
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+tracing = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
 
 # TODO: test that we control number of messages
 

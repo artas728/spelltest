@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
-from .managers import EvaluationResult
+from .managers import EvaluationResult, Message
 from ..entities.metric import Metric
 
 @dataclass
@@ -11,6 +11,17 @@ class ReasonType:
     LLM_UPDATE = "LLM_UPDATE"
 
 @dataclass
+class ChatSimulationMessageStorage:
+    chat_history: List[Message]
+    perfect_chat_history: List[Message]
+
+@dataclass
+class CompletionSimulationMessageStorage:
+    prompt: Message
+    completion: Message
+    perfect_completion: Message
+
+@dataclass
 class Simulation:
     prompt_version_id: int
     app_user_persona_id: int
@@ -18,5 +29,6 @@ class Simulation:
     length_complexity: float
     chat_id: str or None
     evaluations: List[EvaluationResult]
+    message_storage: Union[ChatSimulationMessageStorage, CompletionSimulationMessageStorage]
     granular_evaluation: bool = False
 

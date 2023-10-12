@@ -10,7 +10,7 @@ from .ai_managers.chat_manager import ConversationState
 from .ai_managers.evaluation_manager import EvaluationManager
 from .entities.general import Mode
 from .entities.managers import EvaluationResult
-from .entities.simulation import Simulation
+from .entities.simulation import Simulation, ChatSimulationMessageStorage, CompletionSimulationMessageStorage
 
 CHAT_MAX_MESSAGES_DEFAULT = 6
 SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
@@ -75,7 +75,12 @@ async def _asimulate(
             length_complexity=0.0,   # TODO
             chat_id=user_persona_manager.chat_id,
             evaluations=evaluations,
-            granular_evaluation=False
+            granular_evaluation=False,
+            message_storage=ChatSimulationMessageStorage(
+                chat_history=chat_history,
+                perfect_chat_history=evaluation_manager.perfect_chat_history
+                if hasattr(evaluation_manager, "perfect_chat_history") else None,
+            )
         )
     elif mode is Mode.RAW_COMPLETION:
         prompt, completion = await _generate_raw_completion(app_manager, user_persona_manager)
@@ -91,7 +96,13 @@ async def _asimulate(
             length_complexity=0.0,  # TODO
             chat_id=None,
             evaluations=evaluations,
-            granular_evaluation=False
+            granular_evaluation=False,
+            message_storage=CompletionSimulationMessageStorage(
+                prompt=prompt,
+                completion=completion,
+                perfect_completion=evaluation_manager.perfect_completion
+                if hasattr(evaluation_manager, "perfect_completion") else None,
+            )
         )
     else:
         raise Exception(f"Unexpected mode: {mode}")

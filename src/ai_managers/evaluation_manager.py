@@ -109,8 +109,8 @@ class EvaluationManager(EvaluationManagerBase):
         return await self._evaluate(chat_history, self.perfect_chat_history)
 
     async def evaluate_raw_completion(self, prompt, completion, user_persona_manager) -> List[EvaluationResult]:
-        perfect_completion = await self._generate_perfect_completion(prompt, completion)
-        return await self._evaluate(prompt.text+completion.text, prompt.text+perfect_completion.text)
+        self.perfect_completion = await self._generate_perfect_completion(prompt, completion)
+        return await self._evaluate(prompt.text+completion.text, prompt.text+self.perfect_completion.text)
 
     async def _generate_perfect_chat(self, chat_history: List[Message]) -> List[Message]:
         re_ask_user_manager = False
