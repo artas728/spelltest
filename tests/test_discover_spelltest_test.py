@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src import discover_spelltests
+from spelltest import discover_spelltests
 
 
-@patch("src.discover_spelltests.pkgutil")
-@patch("src.discover_spelltests.importlib")
+@patch("spelltest.discover_spelltests.pkgutil")
+@patch("spelltest.discover_spelltests.importlib")
 def test_run_spelltests(mock_importlib, mock_pkgutil):
     # Mock the module and spelltest function
     mock_module = MagicMock()
@@ -19,8 +19,8 @@ def test_run_spelltests(mock_importlib, mock_pkgutil):
     mock_module.spelltest_example_test.assert_called_once()
 
 
-@patch("src.discover_spelltests.pkgutil")
-@patch("src.discover_spelltests.importlib")
+@patch("spelltest.discover_spelltests.pkgutil")
+@patch("spelltest.discover_spelltests.importlib")
 def test_run_spelltests_calls_all_spelltest_functions(mock_importlib, mock_pkgutil):
     # Mock the module and spelltest functions
     mock_module = MagicMock()

@@ -1,5 +1,5 @@
 import pytest
-from src import yaml_tests
+from spelltest import yaml_tests
 from unittest.mock import patch, mock_open
 
 
@@ -32,8 +32,8 @@ mock_config = {
 
 
 # @patch("builtins.open", new_callable=mock_open, read_data="prompt text")
-# @patch("src.yaml_tests.spelltest_run_simulation")
-# @patch("src.yaml_tests.parse_config")
+# @patch("spelltest.yaml_tests.spelltest_run_simulation")
+# @patch("spelltest.yaml_tests.parse_config")
 # def test_run_yaml_tests_calls_simulation(mock_parse_config, mock_spelltest_run_simulation, mock_file):
 #     mock_parse_config.return_value = mock_config
 #     yaml_tests.run_yaml_tests()

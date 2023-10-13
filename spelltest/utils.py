@@ -2,7 +2,7 @@ import math
 import string
 from pathlib import Path
 
-from src.entities.managers import MessageType
+from spelltest.entities.managers import MessageType
 
 THIS_DIRECTORY = Path(__file__).parent.absolute()
 TEMPLATE_DIRECTORY = THIS_DIRECTORY / "prompts"

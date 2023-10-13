@@ -3,17 +3,17 @@ import uuid
 import pytest
 from typing import List
 from unittest.mock import patch
-from src.ai_managers.utils.chain import CustomConversationChain
-from src.entities.managers import MessageType
-from src.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
-from src.spelltest import spelltest
-from src.ai_managers.evaluation_manager import EvaluationManager, EvaluationManagerBase, EvaluationResult
-from src.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager, ChatManagerBase
-from src.ai_managers.raw_completion_manager import AIModelDefaultCompletionManager, AIModelDefaultCompletionManagerBase, \
+from spelltest.ai_managers.utils.chain import CustomConversationChain
+from spelltest.entities.managers import MessageType
+from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
+from spelltest.spelltest import spelltest
+from spelltest.ai_managers.evaluation_manager import EvaluationManager, EvaluationManagerBase, EvaluationResult
+from spelltest.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager, ChatManagerBase
+from spelltest.ai_managers.raw_completion_manager import AIModelDefaultCompletionManager, AIModelDefaultCompletionManagerBase, \
     SyntheticUserCompletionManager, SyntheticUserRawCompletionManagerBase
-from src.ai_managers.chat_manager import Message
-from src.ai_managers.raw_completion_manager import CustomLLMChain
-from src.tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate
+from spelltest.ai_managers.chat_manager import Message
+from spelltest.ai_managers.raw_completion_manager import CustomLLMChain
+from spelltest.tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate
 from langchain.llms.fake import FakeListLLM as DefaultFakeListLLM
 
 

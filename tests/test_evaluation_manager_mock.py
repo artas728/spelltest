@@ -5,9 +5,9 @@ import uuid
 import pytest
 import openai
 from unittest.mock import Mock, patch, AsyncMock
-from src.ai_managers.evaluation_manager import EvaluationManager, Message, MessageType
-from src.tracing.promtelligence_tracing import PromptelligenceClient
-from src.ai_managers.raw_completion_manager import CustomLLMChain
+from spelltest.ai_managers.evaluation_manager import EvaluationManager, Message, MessageType
+from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.raw_completion_manager import CustomLLMChain
 from langchain.llms.fake import FakeListLLM
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))

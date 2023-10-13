@@ -2,8 +2,8 @@
 
 import os
 import yaml
-from src.entities.metric import MetricDefinition
-from src.spelltest import spelltest_run_simulation, SyntheticUser, SyntheticUserParams  # update module name
+from spelltest.entities.metric import MetricDefinition
+from spelltest.spelltest import spelltest_run_simulation, SyntheticUser, SyntheticUserParams  # update module name
 
 def parse_config(filename: str = ".spellforge.yaml"):
     with open(filename, 'r') as file:

@@ -1,15 +1,14 @@
 import os
 import pytest
-from spelltest_v2.src.ai_managers.chat_manager import SyntheticUserChatManager
-from spelltest_v2.src.ai_managers.evaluation_manager import EvaluationManager, Message, MessageType
-from spelltest_v2.src.entities.metric import MetricDefinition
-from spelltest_v2.src.entities.synthetic_user import SyntheticUserParams, SyntheticUser
-from spelltest_v2.src.tracing.promtelligence_tracing import PromptelligenceClient
-from spelltest_v2.src.ai_managers.raw_completion_manager import CustomLLMChain, SyntheticUserCompletionManager
-from langchain.llms.fake import FakeListLLM
+from spelltest.ai_managers.chat_manager import SyntheticUserChatManager
+from spelltest.ai_managers.evaluation_manager import EvaluationManager, Message, MessageType
+from spelltest.entities.metric import MetricDefinition
+from spelltest.entities.synthetic_user import SyntheticUserParams, SyntheticUser
+from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.raw_completion_manager import CustomLLMChain, SyntheticUserCompletionManager
 
-
-tracing = PromptelligenceClient()
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+tracing = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
 
 @pytest.fixture
 def setup_manager_chat():

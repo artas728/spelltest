@@ -2,10 +2,10 @@ import json
 import os
 
 import pytest
-from src.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
-from src.entities.managers import Message, MessageType
-from src.ai_managers.raw_completion_manager import SyntheticUserCompletionManager, AIModelDefaultCompletionManager, CustomLLMChain
-from src.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
+from spelltest.entities.managers import Message, MessageType
+from spelltest.ai_managers.raw_completion_manager import SyntheticUserCompletionManager, AIModelDefaultCompletionManager, CustomLLMChain
+from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
 from langchain.llms.fake import FakeListLLM
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))

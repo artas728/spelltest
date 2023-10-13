@@ -1,7 +1,7 @@
 import sys
 import argparse
-from spelltest_v2.src.discover_spelltests import run_spelltests
-from spelltest_v2.src.yaml_tests import run_yaml_tests
+from spelltest.discover_spelltests import run_spelltests
+from spelltest.yaml_tests import run_yaml_tests
 
 
 def main():

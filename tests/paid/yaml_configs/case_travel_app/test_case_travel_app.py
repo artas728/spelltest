@@ -1,6 +1,6 @@
 import pytest
 import os
-from src.yaml_tests import run_yaml_tests  # assuming yaml_tests contains run_yaml_tests() function
+from spelltest.yaml_tests import run_yaml_tests  # assuming yaml_tests contains run_yaml_tests() function
 import glob
 
 # Dynamically generate list of available YAML test configurations

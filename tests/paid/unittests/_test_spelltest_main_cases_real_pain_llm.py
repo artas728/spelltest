@@ -1,20 +1,41 @@
 import json
+import pytest
 from typing import List
 from unittest.mock import patch
-
-import pytest
-
-from spelltest_v2.src.ai_managers.utils.chain import CustomConversationChain
-from spelltest_v2.src.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
-from spelltest_v2.src.spelltest import spelltest
-from spelltest_v2.src.ai_managers.chat_manager import ChatManagerBase
-from spelltest_v2.src.ai_managers.evaluation_manager import EvaluationManager, EvaluationManagerBase, EvaluationResult
-from spelltest_v2.src.ai_managers.chat_manager import Message
-from spelltest_v2.src.ai_managers.raw_completion_manager import CustomLLMChain
+from spelltest.ai_managers.utils.chain import CustomConversationChain
+from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
+from spelltest.spelltest import spelltest
+from spelltest.ai_managers.chat_manager import ChatManagerBase
+from spelltest.ai_managers.evaluation_manager import EvaluationManager, EvaluationManagerBase, EvaluationResult
+from spelltest.ai_managers.chat_manager import Message
+from spelltest.ai_managers.raw_completion_manager import CustomLLMChain
 from langchain.llms.fake import FakeListLLM
 
 
+PROMPT = "Write personalized sales email according user requirements"
+metric = MetricDefinition(
+    name="accuracy",
+    definition="accuracy",
+)
+user = SyntheticUser(
+        name='user',
+        params=SyntheticUserParams(
+            temperature=0.8,
+            llm_name="gpt-3.5-turbo",
+            description="User description",
+            expectation="User expectation",
+            user_knowledge_about_app="User knowledge about app",
+        ),
+        metrics=[
+            metric
+        ]
+)
+
+
 class CustomChatManager(ChatManagerBase):
+    user = user
+    metrics = user.metrics
+    prompt_version_id = ...
     def initialize_conversation(self):
         return Message()
 
@@ -37,31 +58,14 @@ class CustomEvaluationManager(EvaluationManagerBase):
         return [EvaluationResult(MetricDefinition("custom_test", "custom test definition"), 0.8)]
 
 
-PROMPT = "Write personalized sales email according user requirements"
-user = SyntheticUser(
-        name='user',
-        params=SyntheticUserParams(
-            temperature=...,
-            llm_name=...,
-            description=...,
-            expectation=...,
-            user_knowledge_about_app=...,
-        ),
-        metrics=[
-            MetricDefinition(
-                name=...,
-                definition=...,
-            )
-        ]
-        )
 custom_user_persona_manager = CustomChatManager(role="Human", opposite_role="AI")
 custom_ai_model_manager = CustomChatManager(role="AI", opposite_role="Human")
 custom_evaluation_manager = CustomEvaluationManager()
 
 ################################################ SETUP
-from spelltest_v2.src.ai_managers.evaluation_manager import EvaluationManager
-from spelltest_v2.src.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager
-from spelltest_v2.src.ai_managers.raw_completion_manager import AIModelDefaultCompletionManager, SyntheticUserCompletionManager
+from spelltest.ai_managers.evaluation_manager import EvaluationManager
+from spelltest.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager
+from spelltest.ai_managers.raw_completion_manager import AIModelDefaultCompletionManager, SyntheticUserCompletionManager
 
 # Assuming you've already defined/imported FakeListLLM, CustomLLMChain, and responses
 

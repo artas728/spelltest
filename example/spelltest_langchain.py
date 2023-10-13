@@ -1,10 +1,5 @@
-from ..my_app import app.langchain_chain as chain
-from ..src.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
-from ..src.spelltest import spelltest
-from ..src.chat_manager import ChatManagerBase
-from ..src.evaluation_manager import EvaluationManager, EvaluationManagerBase, EvaluationResult
-from ..src.chat_manager import Message
-
+from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
+from spelltest.spelltest import spelltest
 
 user = SyntheticUser(
         params=SyntheticUserParams(

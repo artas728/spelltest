@@ -1,18 +1,14 @@
 import os
 
 import pytest
-import pytest_asyncio
-from spelltest_v2.src.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
-from spelltest_v2.src.entities.managers import Message, MessageType
-from spelltest_v2.src.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager, \
-    CustomConversationChain
-from spelltest_v2.src.ai_managers.raw_completion_manager import CustomLLMChain
-from unittest.mock import AsyncMock
-from spelltest_v2.src.tracing.promtelligence_tracing import PromptelligenceClient
-from langchain.llms.fake import FakeListLLM
+from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
+from spelltest.entities.managers import Message, MessageType
+from spelltest.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager
+from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
 
 
-tracing = PromptelligenceClient()
+IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+tracing = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
 
 TARGET_PROMPT = "Craft an email for me"
 
