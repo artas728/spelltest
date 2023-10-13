@@ -1,6 +1,4 @@
-metrics:    # metrics for every users
-  tpas:
-    description: "Our accuracy is TPAS - The Travel Plan Accuracy Score. This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output, well-scheduled travel plan and nothing else. The TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating non-accurate result."
+project_name: "Travel schedule app"
 
 users:    # by default all users are relevant
   nomad:
@@ -29,6 +27,10 @@ users:    # by default all users are relevant
     expectation: "A comprehensive travel plan that provides a relaxed pace, ensuring enough time to explore and enjoy each location, and includes historical and cultural experiences. It should also consider comfort and accessibility."
     user_knowledge_about_app: "The app accepts text input detailing travel requirements (i.e., destination, preferences, duration, and a brief description of travelers) and returns a well-organized travel itinerary tailored to those specifics."
     metrics: __all__
+
+metrics:    # metrics for every users
+  tpas:
+    description: "TPAS - The Travel Plan Accuracy Score. This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output, well-scheduled travel plan and nothing else. The TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating non-accurate result."
 
 prompts:
   smart-prompt:
@@ -69,4 +71,4 @@ simulations:
     chat_mode: true
     quality_threshold: 80
 
-include_spelltest_simulations: true
+include_custom_spelltest_simulations: true
