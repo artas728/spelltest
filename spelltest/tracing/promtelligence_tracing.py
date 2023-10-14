@@ -275,7 +275,7 @@ class PromptelligenceTracer(BaseCallbackHandler, ABC):
         parent_run_id: Optional = None,
         **kwargs: Any,
     ) -> Any:
-        if client.ignore:
+        if client.ignore_tracing:
             return
         if bool(os.environ.get("PYTEST_RUN_CONFIG", 'False')) is True:
             kwargs["invocation_params"]["model_name"] = "text-davinci-003"
@@ -295,7 +295,7 @@ class PromptelligenceTracer(BaseCallbackHandler, ABC):
         self, response: LLMResult, run_id, parent_run_id: Optional = None, **kwargs: Any
     ) -> None:
         """End a trace for an LLM run."""
-        if client.ignore:
+        if client.ignore_tracing:
             return
         if bool(os.environ.get("PYTEST_RUN_CONFIG", 'False')) is True and response.llm_output is None:
             response.llm_output = {"model_name": "text-davinci-003", "token_usage": None}

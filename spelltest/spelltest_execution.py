@@ -115,7 +115,7 @@ async def _generate_chat(app_chat_manager, user_persona_manager, max_messages):
     if not max_messages:
         max_messages = CHAT_MAX_MESSAGES_DEFAULT
     # Continuously call "next_message" function between two sides until UserPersonaManager decides that conversation is over
-    while user_persona_manager.conversation_state() != ConversationState.FINISHED and max_messages >= message_count:
+    while user_persona_manager.conversation_state() is not ConversationState.FINISHED and message_count < max_messages:
         app_message = await app_chat_manager.next_message(user_message)
         user_message = await user_persona_manager.next_message(app_message)
         message_count+=2

@@ -9,8 +9,9 @@ import numpy as np
 from typing import List
 
 from .entities.metric import Metric
-from .entities.simulation import Simulation
+from .entities.simulation import Simulation, ChatSimulationMessageStorage, CompletionSimulationMessageStorage
 from .entities.simulation_job_result import SimulationJobResult
+from .utils import enum_encoder
 
 SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
 SPELLFORGE_API_KEY = os.environ.get("SPELLFORGE_API_KEY")
@@ -20,11 +21,12 @@ def process_simulation_result(
         simulations: List[Simulation],
         llm_name,
         size: int,
+        chat_mode: bool,
         temperature: float,
         reason: str,
         reason_value: str
 ):
-    return ProcessSimulationResult(project_name, simulations, llm_name, size, temperature, reason, reason_value).process()
+    return ProcessSimulationResult(project_name, simulations, llm_name, size, chat_mode, temperature, reason, reason_value).process()
 
 
 class ProcessSimulationResult:
@@ -44,6 +46,7 @@ class ProcessSimulationResult:
                  simulations: List[Simulation],
                  llm_name: str,
                  size: int,
+                 chat_mode: bool,
                  temperature: float,
                  reason: str,
                  reason_value: str,
@@ -53,6 +56,7 @@ class ProcessSimulationResult:
         self.simulations = simulations
         self.llm_name = llm_name
         self.size = size
+        self.chat_mode = chat_mode
         self.temperature = temperature
         self.reason = reason
         self.reason_value = reason_value
@@ -115,19 +119,53 @@ class ProcessSimulationResult:
 
         max_label_length = max(len(label) for label, _ in stats)
         for label, value in stats:
-            print(f"{label.ljust(max_label_length)}: {value * 100:.2f} of 1.00"
+            print(f"{label.ljust(max_label_length)}: {value * 100:.2f} of 100"
                   if "Deviation" not in label else f"{label.ljust(max_label_length)}: {value * 100:.2f}")
 
         # Individual Simulations
         print("\n" + "🔚" + "=" * 58 + "🔚")
 
     def save_simulation_job_result(self):
+        for simulation in self.simulations:
+            if simulation.message_storage:
+                if isinstance(simulation.message_storage, ChatSimulationMessageStorage):
+                    for i, message in enumerate(simulation.message_storage.chat_history):
+                        message_dict = {
+                            "author": message.author.name,  # Convert MessageType enum to its name
+                            "text": message.text,
+                            "run_id": message.run_id
+                        }
+                        simulation.message_storage.chat_history[i] = message_dict
+                    for i, message in enumerate(simulation.message_storage.perfect_chat_history):
+                        message_dict = {
+                            "author": message.author.name,  # Convert MessageType enum to its name
+                            "text": message.text,
+                            "run_id": message.run_id
+                        }
+                        simulation.message_storage.perfect_chat_history[i] = message_dict
+                elif isinstance(simulation.message_storage, CompletionSimulationMessageStorage):
+                    simulation.message_storage.prompt = {
+                        "author": simulation.message_storage.prompt.author.name,
+                        "text": simulation.message_storage.prompt.text,
+                        "run_id": simulation.message_storage.prompt.run_id
+                    }
+                    simulation.message_storage.completion = {
+                        "author": simulation.message_storage.completion.author.name,
+                        "text": simulation.message_storage.completion.text,
+                        "run_id": simulation.message_storage.completion.run_id
+                    }
+                    simulation.message_storage.perfect_completion = {
+                        "author": simulation.message_storage.perfect_completion.author.name,
+                        "text": simulation.message_storage.perfect_completion.text,
+                        "run_id": simulation.message_storage.perfect_completion.run_id
+                    }
         self.simulation_job_data = SimulationJobResult(
             project_name=self.project_name,
             aggregated_metrics=self.aggregated_metrics,
             simulations=self.simulations,
             llm_name=self.llm_name,
             size=self.size,
+            chat_mode=self.chat_mode,
             temperature=self.temperature,
             reason=self.reason,
             reason_value=self.reason_value,

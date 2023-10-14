@@ -13,6 +13,7 @@ class SimulationJobResult:
     simulations: List[Simulation]
     llm_name: str
     size: int
+    chat_mode: bool
     temperature: float
     reason: str
     reason_value: str

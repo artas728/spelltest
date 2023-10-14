@@ -76,8 +76,11 @@ class SyntheticUserChatManager(ChatManagerBase):
         if not chat_history:
             self.chat_history.append(user_response_message)
         if "FINISHED" in user_response_message.text:
-            user_response_message.text.replace("FINISHED", "")
+            user_response_message.text = user_response_message.text.replace("FINISHED", "")
             self.finish()
+        else:
+            # make sure ConversationState is not finished
+            self.state = ConversationState.STARTED
         return user_response_message
 
     def finish(self):

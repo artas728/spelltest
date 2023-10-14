@@ -112,6 +112,7 @@ def spelltest_run_simulation(
         simulations=simulation_result,
         llm_name=llm_name,
         size=size,
+        chat_mode=chat_mode,
         temperature=temperature,
         reason=reason,
         reason_value=reason_value

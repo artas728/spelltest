@@ -1,5 +1,6 @@
 import math
 import string
+from enum import Enum
 from pathlib import Path
 
 from spelltest.entities.managers import MessageType
@@ -45,3 +46,9 @@ def prep_history(chat_history):
     if len(history_strings_list) > 3:
         history_strings_list = history_strings_list[-3:]
     return "\n".join(history_strings_list)
+
+# Define a custom encoder function to handle enums
+def enum_encoder(obj):
+    if isinstance(obj, Enum):
+        return obj.name  # Serialize enum to its name (string)
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not serializable")

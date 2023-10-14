@@ -129,7 +129,7 @@ class EvaluationManager(EvaluationManagerBase):
             new_message = await self._generate_perfect_chat_message(message, perfect_chat_history)
             perfect_chat_history.append(new_message)
             re_ask_user_manager = True
-        return chat_history
+        return perfect_chat_history
 
     async def _generate_perfect_completion(self, prompt: Message, completion: Message) -> Message:
         response = await self.perfect_completion_chain.arun(
