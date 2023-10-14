@@ -4,6 +4,13 @@
 
 Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an Evaluation AI to evaluate these responses.
 
+### Project philosophy
+
+![Spellforge general schema](images/spellforge_general_schema.png)
+ 
+Spelltest simulates and evaluates LLM responses using synthetic users providing a quality score from 0 to 100.  Think about it like a dress rehearsal before your app meets real users. Spelltest supports chat & completion modes.
+
+
 ### Why Spelltest?
 
 - **Quality Assurance**: By simulating how users interact with your LLM-based application, Spelltest ensures your application provides high-quality responses before it interacts with real users.
@@ -14,11 +21,6 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
 
 - **Seamless Integration**: It easily fits into your current development process.
 
-### How It Works
-
-![Spellforge general schema](images/spellforge_general_schema.png)
- 
-Spelltest simulates and evaluates LLM responses using synthetic users providing a quality score from 0 to 100.  Think about it like a dress rehearsal before your app meets real users. Spelltest supports chat & completion modes.
 
 
 ### Getting Started
