@@ -4,12 +4,14 @@ from uuid import uuid4
 # from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
+
+from .tracing.cost_calculation_tracing import CostCalculationTracer
 from .utils.chain import CustomConversationChain
 from ..entities.synthetic_user import SyntheticUser
 from ..entities.managers import MessageType, ConversationState, Message
 from ..utils import load_prompt, extract_fields, prep_history
 from .base.chat_manager import ChatManagerBase
-from ..tracing.promtelligence_tracing import PromptTemplate, PromptelligenceTracer
+from .tracing.promtelligence_tracing import PromptTemplate, PromptelligenceTracer
 
 
 SPELLFORGE_HOST = os.environ.get("SPELLFORGE_HOST", "http://spellforge.ai/")
@@ -40,17 +42,20 @@ class SyntheticUserChatManager(ChatManagerBase):
             parent_alias=system_pre_prompt.alias,
         )
         self.tracing_layer = PromptelligenceTracer(prompt=system_pre_prompt)
+
         llm = ChatOpenAI(openai_api_key=openai_api_key, model_name=self.user.params.llm_name)
         self.chain = CustomConversationChain(llm=llm, prompt=self.system_prompt)
         super().__init__(role=MessageType.USER, opposite_role=MessageType.ASSISTANT)
 
     async def initialize_conversation(self, app_welcome_message: Message) -> Message:
+        self.set_cost_tracker_layer()
+
         if app_welcome_message:
             self.chat_history.append(app_welcome_message)
         user_response = await self.chain.arun(
                 history=prep_history(self.chat_history),
                 input=app_welcome_message.text,
-                callbacks=[self.tracing_layer],
+                callbacks=[self.tracing_layer, self.cost_tracker_layer],
             )
         user_response_message = Message(
             author=MessageType.USER,
@@ -61,13 +66,16 @@ class SyntheticUserChatManager(ChatManagerBase):
         self.state = ConversationState.STARTED
         return user_response_message
 
+    def set_cost_tracker_layer(self):
+        self.cost_tracker_layer = CostCalculationTracer()
+
     async def next_message(self, app_message: Message = None, chat_history: List[Message] = None) -> Message:
         if app_message and not chat_history:
             self.chat_history.append(app_message)
         user_response = await self.chain.arun(
             history=prep_history(self.chat_history if not chat_history else chat_history),
             input=app_message.text,
-            callbacks=[self.tracing_layer],
+            callbacks=[self.tracing_layer, self.cost_tracker_layer],
         )
         user_response_message = Message(
             author=MessageType.USER,
@@ -94,7 +102,15 @@ class SyntheticUserChatManager(ChatManagerBase):
 
 class AIModelDefaultChatManager(ChatManagerBase):
     USER_PSEUDO_REQUEST_FOR_APP_WELCOME_MESSAGE = "Give me your welcome message"
-    def __init__(self, target_prompt, llm_name, openai_api_key, target_prompt_params={}, temperature=0.5, *args, **kwargs):
+    def __init__(self,
+                 target_prompt,
+                 llm_name,
+                 openai_api_key,
+                 target_prompt_params={},
+                 temperature=0.5,
+                 *args,
+                 **kwargs
+                 ):
         self.target_prompt = PromptTemplate(
             template=target_prompt,
             input_variables=extract_fields(target_prompt),
@@ -130,6 +146,7 @@ class AIModelDefaultChatManager(ChatManagerBase):
         super().__init__(*args, **kwargs)
 
     async def initialize_conversation(self):
+        self.cost_tracker_layer = CostCalculationTracer()
         system_message = Message(
             author=MessageType.SYSTEM,
             text=self.system_prompt.template,
@@ -138,7 +155,7 @@ class AIModelDefaultChatManager(ChatManagerBase):
         app_response = await self.chain.arun(
             history=prep_history(self.chat_history),
             input=self.USER_PSEUDO_REQUEST_FOR_APP_WELCOME_MESSAGE,
-            callbacks=[self.tracing_layer],
+            callbacks=[self.tracing_layer, self.cost_tracker_layer],
         )
         app_message = Message(
             author=MessageType.ASSISTANT,
@@ -154,7 +171,7 @@ class AIModelDefaultChatManager(ChatManagerBase):
         app_response = await self.chain.arun(
             history=prep_history(self.chat_history),
             input=user_message.text,
-            callbacks=[self.tracing_layer],
+            callbacks=[self.tracing_layer, self.cost_tracker_layer],
         )
         app_message = Message(
             author=MessageType.ASSISTANT,

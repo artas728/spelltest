@@ -5,13 +5,10 @@ import json
 import time
 import uuid
 from typing import List
-
-from rich.console import Console
 from rich.progress import Progress, TextColumn, BarColumn
-import httpx
-from dataclasses import dataclass, asdict, field
 from .ai_managers.chat_manager import ConversationState
 from .ai_managers.evaluation_manager import EvaluationManager
+from .ai_managers.tracing.cost_calculation_tracing import CostCalculationManager
 from .entities.general import Mode
 from .entities.managers import EvaluationResult
 from .entities.simulation import Simulation, ChatSimulationMessageStorage, CompletionSimulationMessageStorage
@@ -34,47 +31,48 @@ def spelltest_async_together(
     evaluation_llm_name_perfect,
     evaluation_llm_name_rationale,
     evaluation_llm_name_accuracy,
+    console,
 ) -> List[Simulation]:
-    console = Console()
     progress = Progress(TextColumn("[progress.description]{task.description}"),
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.0f}%",
         "•",
         TextColumn("[progress.completed]{task.completed} of {task.total}"),
         transient=True,)
-    with progress:
-        console.print("🚀 Starting simulations!", style="bold red")
-        evaluation_llm_name = evaluation_llm_name if evaluation_llm_name else llm_name
-        tasks = []
-        for sim_num in range(size):
-            for user_persona_manager in user_persona_managers:
-                if not evaluation_manager:
-                    evaluation_manager = EvaluationManager(
-                        metric_definitions=user_persona_manager.metrics,
-                        openai_api_key=openai_api_key,
-                        synthetic_user_persona_manager=user_persona_manager,
-                        llm_name_default=evaluation_llm_name,
-                        llm_name_perfect=evaluation_llm_name_perfect if evaluation_llm_name_perfect else evaluation_llm_name,
-                        llm_name_rationale=evaluation_llm_name_rationale if evaluation_llm_name_rationale else evaluation_llm_name,
-                        llm_name_accuracy=evaluation_llm_name_accuracy if evaluation_llm_name_accuracy else evaluation_llm_name,
-                    )
-                console_render_task_id = progress.add_task(f"[cyan]Simulating({sim_num})...", total=3)
-                tasks.append(_asimulate(app_manager,
-                                        user_persona_manager,
-                                        evaluation_manager,
-                                        mode,
-                                        chat_mode_max_messages,
-                                        progress,
-                                        console_render_task_id,
-                                        sim_num
-                                        ))
-        loop = asyncio.get_event_loop()
-        simulations = loop.run_until_complete(asyncio.gather(*tasks))
-        # console.print("Debug: All simulations reported done, clearing console and printing final message")
-        time.sleep(1)  # wait for 1 second
-        console.clear()
-        console.print("🏁 Simulations finished!", style="bold green")
-        return simulations
+    cost_calculation_manager = CostCalculationManager(console=console)
+    with cost_calculation_manager.live:
+        with progress:
+            console.print("🚀 Starting simulations!", style="bold red")
+            evaluation_llm_name = evaluation_llm_name if evaluation_llm_name else llm_name
+            tasks = []
+            for sim_num in range(size):
+                for user_persona_manager in user_persona_managers:
+                    if not evaluation_manager:
+                        evaluation_manager = EvaluationManager(
+                            metric_definitions=user_persona_manager.metrics,
+                            openai_api_key=openai_api_key,
+                            synthetic_user_persona_manager=user_persona_manager,
+                            llm_name_default=evaluation_llm_name,
+                            llm_name_perfect=evaluation_llm_name_perfect if evaluation_llm_name_perfect else evaluation_llm_name,
+                            llm_name_rationale=evaluation_llm_name_rationale if evaluation_llm_name_rationale else evaluation_llm_name,
+                            llm_name_accuracy=evaluation_llm_name_accuracy if evaluation_llm_name_accuracy else evaluation_llm_name,
+                        )
+                    console_render_task_id = progress.add_task(f"[cyan]Simulating({sim_num})...", total=3)
+                    tasks.append(_asimulate(app_manager,
+                                            user_persona_manager,
+                                            evaluation_manager,
+                                            mode,
+                                            chat_mode_max_messages,
+                                            progress,
+                                            console_render_task_id,
+                                            sim_num
+                                            ))
+            loop = asyncio.get_event_loop()
+            simulations = loop.run_until_complete(asyncio.gather(*tasks))
+            time.sleep(1)  # wait for 1 second
+            console.clear()
+            console.print("🏁 Simulations finished!", style="bold green")
+            return simulations
 
 
 async def _asimulate(
@@ -94,6 +92,7 @@ async def _asimulate(
         progress.update(console_render_task_id, advance=1, description=f" Simulation {sim_num}, Step 2: [bold]Generating Chat[/bold] ⏳ ")
         chat_history = await _generate_chat(app_manager, user_persona_manager, chat_mode_max_messages)
         progress.update(console_render_task_id, advance=1, description=f"Simulation {sim_num}, Step 3: [bold]Evaluation[/bold] ⏳ ")
+        evaluation_manager.initialize_evaluation()
         evaluations: List[EvaluationResult] = await evaluation_manager.evaluate_chat(
             chat_history,
             user_persona_manager
@@ -117,14 +116,14 @@ async def _asimulate(
         progress.update(console_render_task_id, advance=0, description=f" Simulation {sim_num}, Step 2: [bold]Generating Completion[/bold] ⏳ ")
         prompt, completion = await _generate_raw_completion(app_manager, user_persona_manager)
         progress.update(console_render_task_id, advance=1, description=f"Simulation {sim_num}, Step 3: [bold]Evaluation[/bold] ⏳ ")
+        evaluation_manager.initialize_evaluation()
         evaluations: List[EvaluationResult] = await evaluation_manager.evaluate_raw_completion(
             prompt,
             completion,
-            # app_manager,
             user_persona_manager)
         progress.update(console_render_task_id, advance=2, description=f"Simulation {sim_num}, [bold]Simulatoin completed[/bold] ✅ ")
         return Simulation(
-            prompt_version_id=app_manager.prompt_version_id,    #app_manager.target_prompt.promptelligence_params.db_version_id,
+            prompt_version_id=app_manager.prompt_version_id,
             app_user_persona_id=user_persona_manager.user.db_id,
             run_ids=[prompt.run_id, completion.run_id],
             length_complexity=0.0,  # TODO

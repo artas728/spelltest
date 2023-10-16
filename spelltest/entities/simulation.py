@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Union
-
 from .managers import EvaluationResult, Message
-from ..entities.metric import Metric
 
 @dataclass
 class ReasonType:

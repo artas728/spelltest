@@ -3,10 +3,12 @@ import asyncio
 import openai
 from typing import List
 from langchain import OpenAI, PromptTemplate as DefaultPromptTemplate
+
+from .tracing.cost_calculation_tracing import CostCalculationTracer
 from ..utils import load_prompt, calculate_accuracy, \
     calculate_deviation_factor, prep_history
 from .utils.chain import CustomConversationChain, CustomLLMChain
-from ..tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate, PromptelligenceTracer
+from ..ai_managers.tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate, PromptelligenceTracer
 from ..entities.managers import EvaluationResult, MessageType, Message, ConversationState
 from .base.evaluation_manager import EvaluationManagerBase
 
@@ -35,11 +37,15 @@ class EvaluationManager(EvaluationManagerBase):
         self.openai_api_key = openai_api_key
         self.synthetic_user_persona_manager = synthetic_user_persona_manager
 
+        self.perfect_chat_response_key = "response"
+
+    def initialize_evaluation(self):
+        self.cost_tracker_layer = CostCalculationTracer()
+        self.synthetic_user_persona_manager.set_cost_tracker_layer()
         self._init_perfect_chain()
         self._init_rationale_chain()
         self._init_accuracy_chain()
 
-        self.perfect_chat_response_key = "response"
 
     def _init_perfect_chain(self):
         perfect_llm = OpenAI(openai_api_key=self.openai_api_key,
@@ -135,7 +141,7 @@ class EvaluationManager(EvaluationManagerBase):
             prompt=prompt,
             completion=completion,
             callabacks=[
-                self.perfect_completion_tracing_layer
+                self.perfect_completion_tracing_layer, self.cost_tracker_layer
             ]
         )
         return Message(
@@ -149,7 +155,7 @@ class EvaluationManager(EvaluationManagerBase):
             history=prep_history(perfect_chat_history),
             input=message.text,
             callbacks=[
-                self.perfect_chat_tracing_layer
+                self.perfect_chat_tracing_layer, self.cost_tracker_layer
             ]
         )
         return Message(
@@ -188,7 +194,7 @@ class EvaluationManager(EvaluationManagerBase):
             task = self.accuracy_chain.arun(
                 ALL_SIMULATION_TEXT=all_simulation_text,
                 callbacks=[
-                    self.accuracy_tracing_layer
+                    self.accuracy_tracing_layer, self.cost_tracker_layer
                 ])
             tasks.append(task)
 
@@ -213,7 +219,7 @@ class EvaluationManager(EvaluationManagerBase):
         output_expectation = await self.rationale_chain.arun(
             **kwargs,
             callbacks=[
-                self.rationale_tracing_layer
+                self.rationale_tracing_layer, self.cost_tracker_layer
             ],
         )
         return input_text, output_expectation["text"]

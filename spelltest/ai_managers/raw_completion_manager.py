@@ -3,9 +3,11 @@ import os
 from typing import Dict
 from langchain import PromptTemplate as DefaultPromptTemplate
 from langchain.llms import OpenAI
+
+from .tracing.cost_calculation_tracing import CostCalculationTracer
 from .utils.chain import CustomLLMChain
 from ..entities.managers import Message, MessageType
-from ..tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate, PromptelligenceTracer
+from .tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate, PromptelligenceTracer
 from .base.raw_completion_manager import SyntheticUserRawCompletionManagerBase, AIModelDefaultCompletionManagerBase
 from ..entities.synthetic_user import SyntheticUser
 from ..utils import extract_fields, load_prompt
@@ -49,6 +51,7 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
         super().__init__(*args, **kwargs)
 
     async def generate_user_input(self) -> Message:
+        self.set_cost_tracker_layer()
         for _ in range(self.USER_INPUT_ATTEMPTS):
             try:
                 response = await self.chain.arun(
@@ -57,7 +60,7 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
                     input_variables=self.target_prompt.input_variables,
                     target_prompt=self.target_prompt.template,
                     callbacks=[
-                        self.tracing_layer
+                        self.tracing_layer, self.cost_tracker_layer
                     ],
                 )
                 json.loads(response["text"])
@@ -70,9 +73,12 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
                 print(str(json_error))
         raise Exception(f"Expected JSON format from LLM but got {response}")
 
+    def set_cost_tracker_layer(self):
+        self.cost_tracker_layer = CostCalculationTracer()
+
 
 class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
-    def __init__(self, target_prompt, llm_name, openai_api_key, *args, **kwargs):
+    def __init__(self, target_prompt, llm_name, openai_api_key, cost_tracker, *args, **kwargs):
         self.openai_api_key = openai_api_key
         if type(target_prompt) is DefaultPromptTemplate:
             self.target_prompt = target_prompt
@@ -92,6 +98,7 @@ class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
             alias="Synthetic ai model default completion system prompt"
         )
         self.tracing_layer = PromptelligenceTracer(prompt=self.system_prompt)
+        self.cost_tracker_layer = cost_tracker
 
         llm = OpenAI(openai_api_key=openai_api_key, model_name=llm_name)
         self.chain = CustomLLMChain(
@@ -101,10 +108,11 @@ class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
         super().__init__(*args, **kwargs)
 
     async def generate_completion(self, input_variables: Dict) -> Message:
+        self.cost_tracker_layer = CostCalculationTracer()
         response = await self.chain.arun(
             SYSTEM_PROMPT=self.target_prompt.format_prompt(**input_variables).text,
             callbacks=[
-                self.tracing_layer
+                self.tracing_layer, self.cost_tracker_layer
             ],
         )
         return Message(

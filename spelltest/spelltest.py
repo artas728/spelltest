@@ -2,23 +2,26 @@ import os
 from typing import List, Union
 from uuid import uuid4
 
+from rich.console import Console
+
 from .ai_managers.base.chat_manager import ChatManagerBase
 from .ai_managers.base.raw_completion_manager import SyntheticUserRawCompletionManagerBase, \
     AIModelDefaultCompletionManagerBase
 from .ai_managers.base.evaluation_manager import EvaluationManagerBase
 from .ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager, ConversationState
 from .ai_managers.raw_completion_manager import AIModelDefaultCompletionManager, SyntheticUserCompletionManager
+from .ai_managers.tracing.cost_calculation_tracing import CostCalculationManager, CostCalculationTracer
 from .entities.general import Mode
 from .entities.simulation import Simulation, ReasonType
 from .entities.synthetic_user import SyntheticUser, SyntheticUserParams
 from .result_processing import process_simulation_result
 from .spelltest_execution import spelltest_async_together
-from .tracing.promtelligence_tracing import PromptelligenceClient
+from .ai_managers.tracing.promtelligence_tracing import PromptelligenceClient
 
 DEFAULT_LLM = 'gpt-3.5-turbo'
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
 tracing_client = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
-
+console = Console()
 
 def spelltest(*args, **kwargs):
     def decorator(func):
@@ -106,6 +109,7 @@ def spelltest_run_simulation(
         evaluation_llm_name_perfect=evaluation_llm_name_perfect,
         evaluation_llm_name_rationale=evaluation_llm_name_rationale,
         evaluation_llm_name_accuracy=evaluation_llm_name_accuracy,
+        console=console,
     )
     return process_simulation_result(
         project_name=project_name,
