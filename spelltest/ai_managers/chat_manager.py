@@ -1,7 +1,8 @@
 import os
 from typing import List
 from uuid import uuid4
-from langchain.llms import OpenAI
+# from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from .utils.chain import CustomConversationChain
 from ..entities.synthetic_user import SyntheticUser
@@ -39,7 +40,7 @@ class SyntheticUserChatManager(ChatManagerBase):
             parent_alias=system_pre_prompt.alias,
         )
         self.tracing_layer = PromptelligenceTracer(prompt=system_pre_prompt)
-        llm = OpenAI(openai_api_key=openai_api_key, model_name=self.user.params.llm_name)
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model_name=self.user.params.llm_name)
         self.chain = CustomConversationChain(llm=llm, prompt=self.system_prompt)
         super().__init__(role=MessageType.USER, opposite_role=MessageType.ASSISTANT)
 
@@ -121,7 +122,7 @@ class AIModelDefaultChatManager(ChatManagerBase):
         )
         self.tracing_layer = PromptelligenceTracer(prompt=system_pre_prompt)
 
-        llm = OpenAI(openai_api_key=openai_api_key, model_name=llm_name, temperature=self.temperature)
+        llm = ChatOpenAI(openai_api_key=openai_api_key, model_name=llm_name, temperature=self.temperature)
         self.chain = CustomConversationChain(
             llm=llm,
             memory=ConversationBufferWindowMemory(k=6)
@@ -161,7 +162,7 @@ class AIModelDefaultChatManager(ChatManagerBase):
             run_id=str(app_response["__run"].run_id)
         )
         self.chat_history.append(app_message)
-        print(MessageType.ASSISTANT, ":\n")
-        print(app_response)
-        print(":\n")
+        # print(MessageType.ASSISTANT, ":\n")
+        # print(app_response)
+        # print(":\n")
         return app_message
