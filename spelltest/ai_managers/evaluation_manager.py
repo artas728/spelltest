@@ -74,7 +74,6 @@ class EvaluationManager(EvaluationManagerBase):
                 USER_DESCRIPTION=self.synthetic_user_persona_manager.user.params.description,
                 USER_EXPECTATION=self.synthetic_user_persona_manager.user.params.expectation,
             ).text,
-            template_format="jinja2",
             input_variables=["prompt", "completion"]
         )
         self.perfect_completion_chain = CustomLLMChain(llm=perfect_llm, prompt=self.perfect_completion_prompt)
