@@ -129,20 +129,24 @@ class ProcessSimulationResult:
         for simulation in self.simulations:
             if simulation.message_storage:
                 if isinstance(simulation.message_storage, ChatSimulationMessageStorage):
+                    chat_history_dicts = []
                     for i, message in enumerate(simulation.message_storage.chat_history):
                         message_dict = {
                             "author": message.author.name,  # Convert MessageType enum to its name
                             "text": message.text,
-                            "run_id": message.run_id
+                            "run_id": message.run_id,
                         }
-                        simulation.message_storage.chat_history[i] = message_dict
+                        chat_history_dicts.append(message_dict)
+                    simulation.message_storage.chat_history = chat_history_dicts
+                    perfect_chat_history_dicts = []
                     for i, message in enumerate(simulation.message_storage.perfect_chat_history):
                         message_dict = {
                             "author": message.author.name,  # Convert MessageType enum to its name
                             "text": message.text,
-                            "run_id": message.run_id
+                            "run_id": message.run_id,
                         }
-                        simulation.message_storage.perfect_chat_history[i] = message_dict
+                        perfect_chat_history_dicts.append(message_dict)
+                    simulation.message_storage.perfect_chat_history = perfect_chat_history_dicts
                 elif isinstance(simulation.message_storage, CompletionSimulationMessageStorage):
                     simulation.message_storage.prompt = {
                         "author": simulation.message_storage.prompt.author.name,
@@ -189,5 +193,7 @@ class ProcessSimulationResult:
         file_path = os.path.join(folder_path, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(asdict(self.simulation_job_data), f, ensure_ascii=False, indent=4)
+        print(f"Saved in {file_path} (project '{self.project_name}')")
+
 
 
