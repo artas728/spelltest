@@ -73,6 +73,7 @@ def main():
 
                 # Visualizing the Gaussian distribution
                 plt.figure(figsize=(10, 6))
+                plt.style.use('dark_background')  # this will automatically set the background of the plot to black
                 sns.histplot(accuracy_values, kde=True, stat="density", bins=10, linewidth=0)
                 plt.title('Gaussian Distribution of Accuracy')
                 plt.xlabel('Accuracy')
@@ -87,7 +88,6 @@ def main():
                     expand_label = f"Simulation {i}"
 
                     with st.expander(expand_label, expanded=False):
-                        st.subheader("Metrics")
                         for metric in row["evaluations"]:
                             st.subheader(f"Metric {metric['metric']['name']}")
                         gauge_col1, gauge_col2 = st.columns(2)
