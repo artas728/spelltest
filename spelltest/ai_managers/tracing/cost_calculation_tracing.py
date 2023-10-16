@@ -8,6 +8,18 @@ from rich import box
 from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
+from rich.box import Box
+
+invisible_box = Box(
+    "    \n"  # top
+    "    \n"  # head
+    "    \n"  # head_row
+    "    \n"  # mid
+    "    \n"  # row
+    "    \n"  # foot_row
+    "    \n"  # foot
+    "    "    # bottom (no newline character at the end)
+)
 
 class CostCalculationManager:
     _instance = None
@@ -23,10 +35,10 @@ class CostCalculationManager:
         return cls._instance
 
     def _render(self):
-        return Panel(Text(f"Cost: ${self.cost_usd:.8f}"),
-                     box=box.ROUNDED,
-                     padding=(1, 2)
-        )
+        return Panel(Text(f"Cost: ${self.cost_usd:.8f}", justify="right"),
+                     box=invisible_box,
+                     padding=(1, 2),
+                     )
 
     def update_cost(self):
         self.live.update(self._render())

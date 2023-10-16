@@ -71,7 +71,7 @@ def spelltest_async_together(
             simulations = loop.run_until_complete(asyncio.gather(*tasks))
             time.sleep(1)  # wait for 1 second
             console.clear()
-            console.print("🏁 Simulations finished!", style="bold green")
+            console.print(f"🏁 Simulations finished! You spent {cost_calculation_manager.cost_usd}", style="bold green")
             return simulations
 
 
