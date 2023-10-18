@@ -7,7 +7,7 @@ from langchain.llms import OpenAI
 from .tracing.cost_calculation_tracing import CostCalculationTracer
 from .utils.chain import CustomLLMChain
 from ..entities.managers import Message, MessageType
-from .tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate, PromptelligenceTracer
+from .tracing.promtelligence_tracing import PromptTemplate, PromptelligenceTracer
 from .base.raw_completion_manager import SyntheticUserRawCompletionManagerBase, AIModelDefaultCompletionManagerBase
 from ..entities.synthetic_user import SyntheticUser
 from ..utils import extract_fields, load_prompt
@@ -32,7 +32,7 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
             )
         else:
             raise Exception(f"Unexpected type of target_prompt: {type(target_prompt)}")
-        self.system_prompt = TracedPromptTemplate(
+        self.system_prompt = PromptTemplate(
             template=load_prompt(
                 "completion_manager/system.completion_user_agent.txt.jinja2"
             ),
@@ -54,10 +54,14 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
         self.set_cost_tracker_layer()
         for _ in range(self.USER_INPUT_ATTEMPTS):
             try:
+                if self.target_prompt.input_variables:
+                    input_variables = self.target_prompt.input_variables
+                else:
+                    input_variables = '["USER_INPUT"]'
                 response = await self.chain.arun(
                     APP_DESCRIPTION=self.user.params.user_knowledge_about_app,
                     USER_DESCRIPTION=self.user.params.description,
-                    input_variables=self.target_prompt.input_variables,
+                    input_variables=input_variables,
                     target_prompt=self.target_prompt.template,
                     callbacks=[
                         self.tracing_layer, self.cost_tracker_layer
@@ -78,18 +82,18 @@ class SyntheticUserCompletionManager(SyntheticUserRawCompletionManagerBase):
 
 
 class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
-    def __init__(self, target_prompt, llm_name, openai_api_key, cost_tracker, *args, **kwargs):
+    def __init__(self, target_prompt, llm_name, openai_api_key, *args, **kwargs):
         self.openai_api_key = openai_api_key
         if type(target_prompt) is DefaultPromptTemplate:
             self.target_prompt = target_prompt
         elif type(target_prompt) is str:
-            self.target_prompt = TracedPromptTemplate(
+            self.target_prompt = PromptTemplate(
                 template=target_prompt,
                 input_variables=extract_fields(target_prompt),
                 alias="Customer prompt",
             )
         self.prompt_version_id = self.target_prompt.promptelligence_params.db_version_id
-        self.system_prompt = TracedPromptTemplate(
+        self.system_prompt = PromptTemplate(
             template=load_prompt(
                 "completion_manager/system.completion_assistant.txt.jinja2"
             ),
@@ -98,7 +102,6 @@ class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
             alias="Synthetic ai model default completion system prompt"
         )
         self.tracing_layer = PromptelligenceTracer(prompt=self.system_prompt)
-        self.cost_tracker_layer = cost_tracker
 
         llm = OpenAI(openai_api_key=openai_api_key, model_name=llm_name)
         self.chain = CustomLLMChain(
@@ -109,6 +112,8 @@ class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
 
     async def generate_completion(self, input_variables: Dict) -> Message:
         self.cost_tracker_layer = CostCalculationTracer()
+        if not self.target_prompt.input_variables and "USER_INPUT" in input_variables:
+            self.target_prompt.template = f"\n USER_INPUT:\n{input_variables.pop('USER_INPUT')}\nAI:"
         response = await self.chain.arun(
             SYSTEM_PROMPT=self.target_prompt.format_prompt(**input_variables).text,
             callbacks=[
@@ -116,7 +121,7 @@ class AIModelDefaultCompletionManager(AIModelDefaultCompletionManagerBase):
             ],
         )
         return Message(
-            author=MessageType.USER,
+            author=MessageType.ASSISTANT,
             text=response["text"],
             run_id=str(response["__run"].run_id)
         )

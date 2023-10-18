@@ -115,12 +115,12 @@ class EvaluationManager(EvaluationManagerBase):
 
     async def evaluate_raw_completion(self, prompt, completion, user_persona_manager) -> List[EvaluationResult]:
         self.perfect_completion = await self._generate_perfect_completion(prompt, completion)
-        return await self._evaluate(prompt.text+completion.text, prompt.text+self.perfect_completion.text)
+        return await self._evaluate("USER:\n"+prompt.text+completion.text, "\nAI:\n"+prompt.text+self.perfect_completion.text)
 
     async def _generate_perfect_chat(self, chat_history: List[Message]) -> List[Message]:
         re_ask_user_manager = False
         perfect_chat_history = []
-        for message in chat_history:
+        for message in chat_history[1:]:
             if message.author is MessageType.USER:
                 if re_ask_user_manager:
                     new_user_message = await self.synthetic_user_persona_manager.next_message(new_message, perfect_chat_history)
@@ -138,8 +138,8 @@ class EvaluationManager(EvaluationManagerBase):
 
     async def _generate_perfect_completion(self, prompt: Message, completion: Message) -> Message:
         response = await self.perfect_completion_chain.arun(
-            prompt=prompt,
-            completion=completion,
+            prompt=prompt.text,
+            completion=completion.text,
             callabacks=[
                 self.perfect_completion_tracing_layer, self.cost_tracker_layer
             ]

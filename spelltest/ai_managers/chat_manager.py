@@ -1,7 +1,6 @@
 import os
 from typing import List
 from uuid import uuid4
-# from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 
