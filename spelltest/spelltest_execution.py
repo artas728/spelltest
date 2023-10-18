@@ -43,37 +43,70 @@ def spelltest_async_together(
     with cost_calculation_manager.live:
         with progress:
             console.print("🚀 Starting simulations!", style="bold red")
-            evaluation_llm_name = evaluation_llm_name if evaluation_llm_name else llm_name
-            tasks = []
-            for sim_num in range(size):
-                for user_persona_manager in user_persona_managers:
-                    if not evaluation_manager:
-                        evaluation_manager = EvaluationManager(
-                            metric_definitions=user_persona_manager.metrics,
-                            openai_api_key=openai_api_key,
-                            synthetic_user_persona_manager=user_persona_manager,
-                            llm_name_default=evaluation_llm_name,
-                            llm_name_perfect=evaluation_llm_name_perfect if evaluation_llm_name_perfect else evaluation_llm_name,
-                            llm_name_rationale=evaluation_llm_name_rationale if evaluation_llm_name_rationale else evaluation_llm_name,
-                            llm_name_accuracy=evaluation_llm_name_accuracy if evaluation_llm_name_accuracy else evaluation_llm_name,
-                        )
-                    console_render_task_id = progress.add_task(f"[cyan]Simulating({sim_num})...", total=3)
-                    tasks.append(_asimulate(app_manager,
-                                            user_persona_manager,
-                                            evaluation_manager,
-                                            mode,
-                                            chat_mode_max_messages,
-                                            progress,
-                                            console_render_task_id,
-                                            sim_num
-                                            ))
-            loop = asyncio.get_event_loop()
-            simulations = loop.run_until_complete(asyncio.gather(*tasks))
+            simulations = _spelltest_async_together(
+                target_prompt,
+                app_manager,
+                user_persona_managers,
+                evaluation_manager,
+                size,
+                mode,
+                chat_mode_max_messages,
+                openai_api_key,
+                llm_name,
+                evaluation_llm_name,
+                evaluation_llm_name_perfect,
+                evaluation_llm_name_rationale,
+                evaluation_llm_name_accuracy,
+                progress
+            )
             time.sleep(1)  # wait for 1 second
             console.clear()
             console.print(f"🏁 Simulations finished! You spent {cost_calculation_manager.cost_usd}", style="bold green")
             return simulations
 
+
+def _spelltest_async_together(
+        target_prompt,
+        app_manager,
+        user_persona_managers,
+        evaluation_manager,
+        size,
+        mode,
+        chat_mode_max_messages,
+        openai_api_key,
+        llm_name,
+        evaluation_llm_name,
+        evaluation_llm_name_perfect,
+        evaluation_llm_name_rationale,
+        evaluation_llm_name_accuracy,
+        progress
+):
+    evaluation_llm_name = evaluation_llm_name if evaluation_llm_name else llm_name
+    tasks = []
+    for sim_num in range(size):
+        for user_persona_manager in user_persona_managers:
+            if not evaluation_manager:
+                evaluation_manager = EvaluationManager(
+                    metric_definitions=user_persona_manager.metrics,
+                    openai_api_key=openai_api_key,
+                    synthetic_user_persona_manager=user_persona_manager,
+                    llm_name_default=evaluation_llm_name,
+                    llm_name_perfect=evaluation_llm_name_perfect if evaluation_llm_name_perfect else evaluation_llm_name,
+                    llm_name_rationale=evaluation_llm_name_rationale if evaluation_llm_name_rationale else evaluation_llm_name,
+                    llm_name_accuracy=evaluation_llm_name_accuracy if evaluation_llm_name_accuracy else evaluation_llm_name,
+                )
+            console_render_task_id = progress.add_task(f"[cyan]Simulating({sim_num})...", total=3)
+            tasks.append(_asimulate(app_manager,
+                                    user_persona_manager,
+                                    evaluation_manager,
+                                    mode,
+                                    chat_mode_max_messages,
+                                    progress,
+                                    console_render_task_id,
+                                    sim_num
+                                    ))
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(asyncio.gather(*tasks))
 
 async def _asimulate(
         app_manager,

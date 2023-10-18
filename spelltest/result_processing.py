@@ -105,8 +105,6 @@ class ProcessSimulationResult:
         return Metric(**aggregated_metrics)
 
     def print_simulation_job_result(self):
-
-        # Header
         print(f"{self.ANSI_COLORS['cyan']}📊 {'=' * 23} Simulation Results"
               f"{'=' * 23} 📊{self.ANSI_COLORS['reset']}\n")
 
