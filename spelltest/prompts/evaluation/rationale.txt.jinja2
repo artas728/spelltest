@@ -1,25 +1,34 @@
-As a text accuracy evaluator, your task is to assess the accuracy of a given text in comparison to a provided perfect text, based on the given accuracy definition:
+As an evaluator specializing in assessing textual accuracy, you are tasked with a critical analysis of AI-generated responses. This evaluation should be conducted within the framework provided by the specific accuracy definition:
+
 ```accuracy-definition
 {{ ACCURACY_DEFINITION }}
 ```
 
-Here is user expectations:
+Please consider the user's anticipated outcomes and experiences:
+```user-expectations
 {{ USER_EXPECTATION }}
-
 ```
-Result to evaluate:
+
+You are presented with the following AI-generated text for evaluation:
 ```result-to-evaluate
 {{ REAL_RESULT }}
-
 ```
-The perfect result to evaluate the distance from:
+
+Additionally, consider the ideal response:
 ```perfect_result
 {{ PERFECT_RESULT }}
-
 ```
-In your response, please include a comprehensive evaluation of the accuracy of the given text, along with a rationale for your evaluation. Compare the given text to the perfect text and explain any deviations in terms of the positive and negative factors described in the accuracy definition. Assess the importance of these factors from the perspective of the accuracy definition.
-In your evaluation DO NOT COMPARE text and perfect text directly. You MUST to evaluate how they relevant to accuracy definition independently from each other. It's fine if text and perfect text have different meaning.
-You MUST constructively self-criticize about how your evaluation relevant to accuracy definition.
-Your evaluation should be objective, thorough, and consider different types of texts and errors that may be present.
-You MUST constructively self-criticize about how your evaluation relevant to accuracy definition.
-Please note that you should provide detailed and specific feedback, highlighting the strengths and weaknesses of the given text with respect to its accuracy.
+
+Your evaluation process should adhere to the following guidelines:
+
+1. **Independent Analysis:** Delve into each text separately, assessing how well it aligns with the criteria set forth in the accuracy definition. It is vital to anchor your analysis in these criteria, exploring the depth, relevance, and precision of each text in isolation.
+
+2. **Contextual Understanding:** Reflect on the content within the boundaries of the user's expectations. How well does each piece of text meet these anticipated standards? Scrutinize the content for factual correctness, relevance, consistency, and any other domain-specific standards detailed in the accuracy definition.
+
+3. **Critical Discrepancies:** Identify and elaborate on any critical points of deviation. These are aspects where the content potentially falters in meeting the accuracy standards or user expectations. Your insights should delve into the 'why' behind these discrepancies, providing a well-rounded perspective.
+
+4. **Self-reflective Critique:** Conclude with a self-assessment of your analysis. Discuss any potential blind spots, subjective interpretations, or other obstacles you encountered during your evaluation. This introspection is crucial for transparency and continuous improvement in the evaluation process.
+
+5. **Constructive Summary:** End your evaluation with a constructive overview, pinpointing the strengths and potential areas for improvement. This feedback should not only be a critique but a guide that can drive the qualitative enhancement of future AI-generated text, ensuring alignment with both accuracy and user expectations.
+
+Throughout your evaluation, maintain a balance between critical assessment and objective reasoning, ensuring that your feedback is grounded in the criteria provided while being insightful and forward-looking. The ultimate goal is to uphold the integrity and reliability of AI-driven textual applications through meticulous and thoughtful evaluation.
