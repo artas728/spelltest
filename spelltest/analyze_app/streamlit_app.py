@@ -28,7 +28,7 @@ def main():
         project_choices = [os.path.join(project_path, d) for d in os.listdir(project_path) if os.path.isdir(os.path.join(project_path, d))]
         all_project_choices.extend(project_choices)
 
-    project = st.sidebar.selectbox("Select project:", all_project_choices)
+    project = st.sidebar.selectbox("Select project:", sorted(all_project_choices))
 
     # If a project is selected, retrieve the list of simulation sessions (JSON files)
     if project:
@@ -89,21 +89,31 @@ def main():
 
                     with st.expander(expand_label, expanded=False):
                         for metric in row["evaluations"]:
-                            st.subheader(f"Metric {metric['metric']['name']}")
+                            st.subheader(f"Metric '{metric['metric']['name']}'")
                         gauge_col1, gauge_col2 = st.columns(2)
 
                         gauge_col1.metric(label="Mean Accuracy", value=metric["accuracy"])
                         gauge_col2.metric(label="Std. Dev. Accuracy", value=metric["accuracy_deviation"])
-                        st.subheader("Communication history")
-                        if simulation_session_data["chat_mode"]:
-                            for i in row["message_storage"]["chat_history"][1:]:
-                                message(i["text"], is_user=i["author"] == MessageType.USER.name, key=str(uuid4())[:7])
-                        else:
-                            message(row["message_storage"]["prompt"], is_user=True, key=str(uuid4())[:7])
-                            message(row["message_storage"]["completion"], is_user=False, key=str(uuid4())[:7])
-                        for metric in row["evaluations"]:
-                            st.subheader(f"Rationale {metric['metric']['name']}")
-                            st.write(metric["rationale"])
+                        tab1, tab2, tab3 = st.tabs(["Chat", "Perfect chat", "Rationale"])
+                        with tab1:
+                            if simulation_session_data["chat_mode"]:
+                                for i in row["message_storage"]["chat_history"][1:]:
+                                    message(i["text"], is_user=i["author"] == MessageType.USER.name, key=str(uuid4())[:7])
+                            else:
+                                message(row["message_storage"]["prompt"]["text"], is_user=True, key=str(uuid4())[:7])
+                                message(row["message_storage"]["completion"]["text"], is_user=False, key=str(uuid4())[:7])
+                        with tab2:
+                            if simulation_session_data["chat_mode"]:
+                                for i in row["message_storage"]["perfect_chat_history"][1:]:
+                                    message(i["text"], is_user=i["author"] == MessageType.USER.name, key=str(uuid4())[:7])
+                            else:
+                                message(row["message_storage"]["prompt"]["text"], is_user=True, key=str(uuid4())[:7])
+                                message(row["message_storage"]["perfect_completion"]["text"], is_user=False, key=str(uuid4())[:7])
+                        with tab3:
+                            for metric in row["evaluations"]:
+                                st.subheader(f"Rationale {metric['metric']['name']}")
+                                st.write(metric["rationale"])
+
 
 if __name__ == "__main__":
     main()
