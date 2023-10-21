@@ -5,7 +5,7 @@ import pytest
 from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
 from spelltest.entities.managers import Message, MessageType
 from spelltest.ai_managers.raw_completion_manager import SyntheticUserCompletionManager, AIModelDefaultCompletionManager, CustomLLMChain
-from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.tracing.promtelligence_tracing import PromptelligenceClient
 from langchain.llms.fake import FakeListLLM
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
@@ -25,7 +25,7 @@ async def test_initialize_completion_synthetic_user():
 
     user = SyntheticUser(name="asedf", params=user_params, metrics=[MetricDefinition(name="metric1", definition="definition1")])
     user_manager = SyntheticUserCompletionManager(user, "My name is {name}. My request is {request}", "test_key")
-
+    user_manager.set_cost_tracker_layer()
     # Mocking chain
     responses = [json.dumps({"Action": "Python REPL\nAction Input: print(2 + 2)"})]
     llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)

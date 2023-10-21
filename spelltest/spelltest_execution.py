@@ -61,9 +61,16 @@ def spelltest_async_together(
             )
             time.sleep(1)  # wait for 1 second
             console.clear()
-            console.print(f"🏁 Simulations finished! You spent {cost_calculation_manager.cost_usd}", style="bold green")
+            console.print(f"🏁 Simulations finished! You spent ${cost_calculation_manager.cost_usd}", style="bold green")
             return simulations
 
+async def _run_tasks_in_chunks(tasks, chunk_size):
+    """Run the provided tasks in chunks and collect their results."""
+    results = []
+    for i in range(0, len(tasks), chunk_size):
+        chunk = tasks[i:i + chunk_size]
+        results.extend(await asyncio.gather(*chunk))  # gather and collect results from the current chunk
+    return results
 
 def _spelltest_async_together(
         target_prompt,
@@ -79,7 +86,8 @@ def _spelltest_async_together(
         evaluation_llm_name_perfect,
         evaluation_llm_name_rationale,
         evaluation_llm_name_accuracy,
-        progress
+        progress,
+        max_concurrent_tasks=10
 ):
     evaluation_llm_name = evaluation_llm_name if evaluation_llm_name else llm_name
     tasks = []
@@ -106,7 +114,7 @@ def _spelltest_async_together(
                                     sim_num
                                     ))
     loop = asyncio.get_event_loop()
-    return loop.run_until_complete(asyncio.gather(*tasks))
+    return loop.run_until_complete(_run_tasks_in_chunks(tasks, max_concurrent_tasks))
 
 async def _asimulate(
         app_manager,
@@ -118,9 +126,10 @@ async def _asimulate(
         console_render_task_id,
         sim_num
 ):
-    app_manager = copy.deepcopy(app_manager)
-    user_persona_manager = copy.deepcopy(user_persona_manager)
+    evaluation_manager.disable_cost_tracker_layer()     # TODO: rewrite this
     evaluation_manager = copy.deepcopy(evaluation_manager)
+    user_persona_manager = copy.deepcopy(user_persona_manager)
+    app_manager = copy.deepcopy(app_manager)
     if mode is Mode.CHAT:
         progress.update(console_render_task_id, advance=1, description=f" Simulation {sim_num}, Step 2: [bold]Generating Chat[/bold] ⏳ ")
         chat_history = await _generate_chat(app_manager, user_persona_manager, chat_mode_max_messages)

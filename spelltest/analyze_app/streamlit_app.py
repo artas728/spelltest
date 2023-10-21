@@ -33,7 +33,7 @@ def main():
     # If a project is selected, retrieve the list of simulation sessions (JSON files)
     if project:
         simulation_sessions_path = project  # Directly using 'project' since it's a full path
-        simulation_session_choices = [f for f in os.listdir(simulation_sessions_path) if f.endswith('.json')]
+        simulation_session_choices = sorted([f for f in os.listdir(simulation_sessions_path) if f.endswith('.json')], reverse=True)
     else:
         simulation_session_choices = []
 
@@ -85,8 +85,7 @@ def main():
 
                 # Create expandable row UI
                 for i, row in df.iterrows():
-                    expand_label = f"Simulation {i}"
-
+                    expand_label = f"Simulation {i} (Accuracy {', '.join([str(metric['accuracy']) for metric in row['evaluations']])})"
                     with st.expander(expand_label, expanded=False):
                         for metric in row["evaluations"]:
                             st.subheader(f"Metric '{metric['metric']['name']}'")
@@ -94,7 +93,7 @@ def main():
 
                         gauge_col1.metric(label="Mean Accuracy", value=metric["accuracy"])
                         gauge_col2.metric(label="Std. Dev. Accuracy", value=metric["accuracy_deviation"])
-                        tab1, tab2, tab3 = st.tabs(["Chat", "Perfect chat", "Rationale"])
+                        tab1, tab2 = st.tabs(["Chat", "Rationale"])
                         with tab1:
                             if simulation_session_data["chat_mode"]:
                                 for i in row["message_storage"]["chat_history"][1:]:
@@ -103,13 +102,6 @@ def main():
                                 message(row["message_storage"]["prompt"]["text"], is_user=True, key=str(uuid4())[:7])
                                 message(row["message_storage"]["completion"]["text"], is_user=False, key=str(uuid4())[:7])
                         with tab2:
-                            if simulation_session_data["chat_mode"]:
-                                for i in row["message_storage"]["perfect_chat_history"][1:]:
-                                    message(i["text"], is_user=i["author"] == MessageType.USER.name, key=str(uuid4())[:7])
-                            else:
-                                message(row["message_storage"]["prompt"]["text"], is_user=True, key=str(uuid4())[:7])
-                                message(row["message_storage"]["perfect_completion"]["text"], is_user=False, key=str(uuid4())[:7])
-                        with tab3:
                             for metric in row["evaluations"]:
                                 st.subheader(f"Rationale {metric['metric']['name']}")
                                 st.write(metric["rationale"])

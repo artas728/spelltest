@@ -36,7 +36,7 @@ class CustomConversationChain(ConversationChain):
             )
         except openai.error.RateLimitError as e:
             print(str(e))
-            wait_and_repeat_if_limit = kwargs.get("wait_and_repeat_if_limit", None)
+            wait_and_repeat_if_limit = kwargs.get("wait_and_repeat_if_limit", 1)
             if wait_and_repeat_if_limit:
                 await asyncio.sleep(wait_and_repeat_if_limit)
                 kwargs["wait_and_repeat_if_limit"] = wait_and_repeat_if_limit * 2
@@ -80,7 +80,7 @@ class CustomLLMChain(LLMChain):
             )
         except openai.error.RateLimitError as e:
             print(str(e))
-            wait_and_repeat_if_limit = kwargs.get("wait_and_repeat_if_limit", None)
+            wait_and_repeat_if_limit = kwargs.get("wait_and_repeat_if_limit", 1)
             if wait_and_repeat_if_limit:
                 await asyncio.sleep(wait_and_repeat_if_limit)
                 kwargs["wait_and_repeat_if_limit"] = wait_and_repeat_if_limit * 2

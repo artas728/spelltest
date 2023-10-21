@@ -13,7 +13,7 @@ from spelltest.ai_managers.raw_completion_manager import AIModelDefaultCompletio
     SyntheticUserCompletionManager, SyntheticUserRawCompletionManagerBase
 from spelltest.ai_managers.chat_manager import Message
 from spelltest.ai_managers.raw_completion_manager import CustomLLMChain
-from spelltest.tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate
+from spelltest.ai_managers.tracing.promtelligence_tracing import PromptTemplate as TracedPromptTemplate
 from langchain.llms.fake import FakeListLLM as DefaultFakeListLLM
 
 
@@ -128,16 +128,19 @@ def mock_init(original_init, behavior_func):
 
 def behavior_for_evaluation_manager(instance):
     instance.perfect_chat_response_key = "text"
-    # mock perfect chat message
-    responses = ["bla bla bla bla"]
-    llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
-    instance.perfect_chat_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_chat_prompt)
-
-    # mock perfect_completion_chain
-    responses = ["bla bla bla bla"]
-    llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
-    instance.perfect_completion_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_completion_prompt)
-
+    # # mock perfect chat message
+    # responses = ["bla bla bla bla"]
+    # llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
+    # instance.perfect_chat_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_chat_prompt)
+    #
+    # # mock perfect_completion_chain
+    # responses = ["bla bla bla bla"]
+    # llm = FakeListLLM(responses=responses, model_name=instance.llm_name_perfect)
+    # instance.perfect_completion_chain = CustomLLMChain(llm=llm, prompt=instance.perfect_completion_prompt)
+    instance.enable_cost_tracker_layer()
+    instance._init_perfect_chain()
+    instance._init_rationale_chain()
+    instance._init_accuracy_chain()
     # mock accuracy chain
     responses = ["0.78"]
     llm = FakeListLLM(responses=responses, model_name=instance.llm_name_accuracy)
@@ -173,7 +176,9 @@ def behavior_for_synthetic_user_completion_manager(instance):
 @pytest.fixture
 def setup_manager():
     with patch.object(EvaluationManager, "__init__", mock_init(EvaluationManager.__init__, behavior_for_evaluation_manager)), \
-         patch.object(SyntheticUserChatManager, "__init__", mock_init(SyntheticUserChatManager.__init__, behavior_for_synthetic_user_chat_manager)), \
+            patch.object(EvaluationManager, "initialize_evaluation",
+                         mock_init(EvaluationManager.initialize_evaluation, behavior_for_evaluation_manager)), \
+            patch.object(SyntheticUserChatManager, "__init__", mock_init(SyntheticUserChatManager.__init__, behavior_for_synthetic_user_chat_manager)), \
          patch.object(AIModelDefaultChatManager, "__init__", mock_init(AIModelDefaultChatManager.__init__, behavior_for_ai_model_default_chat_manager)), \
          patch.object(AIModelDefaultCompletionManager, "__init__", mock_init(AIModelDefaultCompletionManager.__init__, behavior_for_ai_model_default_completion_manager)), \
          patch.object(SyntheticUserCompletionManager, "__init__", mock_init(SyntheticUserCompletionManager.__init__, behavior_for_synthetic_user_completion_manager)):

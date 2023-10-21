@@ -3,6 +3,12 @@ from ...entities.managers import EvaluationResult
 
 class EvaluationManagerBase(ABC):
 
+    def initialize_evaluation(self) -> None:
+        pass
+
+    def disable_cost_tracker_layer(self) -> None:
+        pass
+
     @abstractmethod
     async def evaluate_chat(self, *args, **kwargs) -> EvaluationResult:
         """

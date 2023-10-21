@@ -4,7 +4,7 @@ import pytest
 from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams, MetricDefinition
 from spelltest.entities.managers import Message, MessageType
 from spelltest.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager
-from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.tracing.promtelligence_tracing import PromptelligenceClient
 
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))

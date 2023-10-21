@@ -136,15 +136,6 @@ class ProcessSimulationResult:
                         }
                         chat_history_dicts.append(message_dict)
                     simulation.message_storage.chat_history = chat_history_dicts
-                    perfect_chat_history_dicts = []
-                    for i, message in enumerate(simulation.message_storage.perfect_chat_history):
-                        message_dict = {
-                            "author": message.author.name,  # Convert MessageType enum to its name
-                            "text": message.text,
-                            "run_id": message.run_id,
-                        }
-                        perfect_chat_history_dicts.append(message_dict)
-                    simulation.message_storage.perfect_chat_history = perfect_chat_history_dicts
                 elif isinstance(simulation.message_storage, CompletionSimulationMessageStorage):
                     simulation.message_storage.prompt = {
                         "author": simulation.message_storage.prompt.author.name,
@@ -155,11 +146,6 @@ class ProcessSimulationResult:
                         "author": simulation.message_storage.completion.author.name,
                         "text": simulation.message_storage.completion.text,
                         "run_id": simulation.message_storage.completion.run_id
-                    }
-                    simulation.message_storage.perfect_completion = {
-                        "author": simulation.message_storage.perfect_completion.author.name,
-                        "text": simulation.message_storage.perfect_completion.text,
-                        "run_id": simulation.message_storage.perfect_completion.run_id
                     }
         self.simulation_job_data = SimulationJobResult(
             project_name=self.project_name,

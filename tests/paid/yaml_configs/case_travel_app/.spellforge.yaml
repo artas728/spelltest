@@ -6,31 +6,120 @@ users:    # by default all users are relevant
     llm_name: gpt-3.5-turbo
     temperature: 0.7
     description: "You're a very busy nomad who struggles with planning. You're moved to Seattle and looking at how to spend your first Saturday exploring the city"
-    expectation: "Well-planned objective, detailed, and comprehensive schedule that meets user's requirements"
+    expectation: "A detailed, hour-by-hour itinerary catering to personal preferences, aiming for completeness and practicality. Example: 
+*[EXAMPLE1]*
+Morning:
+6:30 AM - 7:00 AM: Wake up and prepare for the day. Dress in layers, as Seattle weather can be unpredictable.
+
+7:00 AM - 8:00 AM: Breakfast at 'The Original Pancake House' (address: 8037 15th Ave NW). It’s not in the tourist center, reducing the risk of large crowds and potential pickpockets.
+
+8:00 AM - 8:30 AM: Travel to Pike Place Market via rideshare (like Uber or Lyft) to mitigate the risks associated with public transportation early in the morning. It's a 15-minute drive without traffic, but we’ve accounted for potential delays.
+
+Tip: Keep personal belongings secure and avoid displaying expensive items openly.
+
+8:30 AM - 10:30 AM: Explore Pike Place Market. Must-sees include the fish throwers, the original Starbucks, and the Gum Wall.
+
+Midday:
+10:30 AM - 11:00 AM: Walk (10 minutes) to the Seattle Art Museum. This route is typically safe during the day; however, staying alert to your surroundings is advised.
+
+11:00 AM - 1:00 PM: Visit the Seattle Art Museum.
+
+1:00 PM - 2:00 PM: Lunch at 'The Pink Door' (address: 1919 Post Alley) offering Italian-American cuisine. It’s a short 5-minute walk from the museum.
+
+Tip: Make reservations in advance to avoid wait times and ensure a spot, as it's a popular restaurant.
+
+Afternoon:
+2:00 PM - 2:30 PM: Catch a rideshare to the Space Needle. The journey should take approximately 10 minutes, depending on traffic.
+
+2:30 PM - 4:00 PM: Visit the Space Needle. Buying tickets in advance is recommended to bypass long lines.
+
+4:00 PM - 4:30 PM: Walk to Chihuly Garden and Glass (5 minutes away).
+
+4:30 PM - 6:00 PM: Explore Chihuly Garden and Glass.
+
+Evening:
+6:00 PM - 7:00 PM: Dinner at 'SkyCity' Restaurant at the Space Needle. Reservations required; book a window table for sunset views around 6:30 PM.
+
+7:00 PM - 7:30 PM: Rideshare to Kerry Park.
+
+7:30 PM - 8:30 PM: Enjoy views of the city skyline from Kerry Park. The area is generally safe; however, as with any public space, it's wise to keep your valuables secure, especially in the dark.
+
+Night:
+8:30 PM - 9:00 PM: Travel back to your accommodation. It’s safer to use a rideshare service during night hours.
+
+9:00 PM: Arrive at your accommodation.*[/EXAMPLE1]*
+
+[EXAMPLE 2]
+6:00 am – 7:00 am: Wake up and breakfast at the hotel.
+Safety Tip: If dining out, choose places with good hygiene ratings and avoid undercooked foods.
+
+7:00 am – 7:30 am: Uber/taxi from hotel to Kerry Park.
+Potential Risk: Traffic congestion. To avoid, ensure you book your ride ahead of time or use public transportation if feasible.
+
+7:30 am – 8:30 am: Visit Kerry Park for panoramic views of Seattle, including the Space Needle, downtown skyline, and Mount Rainier.
+
+8:30 am – 9:00 am: Walk down to the Seattle Center.
+
+9:00 am – 10:30 am: Explore the Seattle Center: Space Needle, Chihuly Garden, and Glass Museum.
+Safety Tip: It can get crowded. Always keep personal belongings close.
+
+10:30 am – 11:00 am: Take the Monorail to Westlake Center.
+
+11:00 am – 12:30 pm: Wander around Pike Place Market. Don't miss the original Starbucks and the gum wall.
+Potential Risk: Crowds and pickpockets. Keep personal belongings secured.
+
+12:30 pm – 1:30 pm: Lunch at a local restaurant around Pike Place.
+
+1:30 pm – 2:00 pm: Walk or Uber to the waterfront.
+
+2:00 pm – 3:00 pm: Visit the Seattle Aquarium.
+
+3:00 pm – 3:30 pm: Walk to the nearby pier and take the ferry to Bainbridge Island.
+Safety Tip: Stay attentive to ferry announcements and be careful around the ferry edges.
+
+3:30 pm – 4:45 pm: Explore Bainbridge Island – quaint shops, art galleries, etc.
+
+4:45 pm – 5:15 pm: Ferry back to Seattle.
+
+5:15 pm – 5:45 pm: Walk/Uber to Pioneer Square.
+Potential Risk: Some areas around Pioneer Square can be sketchy in the evenings. Stick to well-lit areas.
+
+5:45 pm – 6:45 pm: Explore Pioneer Square: Underground Tour, historic buildings, and art galleries.
+
+6:45 pm – 7:30 pm: Dinner at a restaurant in Pioneer Square.
+
+7:30 pm – 8:00 pm: Uber to Capitol Hill.
+
+8:00 pm – 9:30 pm: Explore Capitol Hill – vibrant nightlife, bars, and music scenes.
+Safety Tip: Avoid excessive alcohol consumption and always stay in well-populated areas.
+
+9:30 pm – 10:00 pm: Uber/taxi back to the hotel.
+*[/EXAMPLE 2]*
+"
     user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
     metrics: __all__
 
-  family_weekend:
-    name: "The Adventurous Family from Chicago"
-    llm_name: gpt-3.5-turbo
-    temperature: 0.7
-    description: "You're a family of four (two adults and two children) based in Chicago looking to plan an exciting, yet relaxed weekend getaway outside the city. The objective is to explore a new environment that is kid-friendly and offers a mix of adventure and downtime."
-    expectation: "A balanced travel schedule that combines fun activities suitable for children and relaxation opportunities for the entire family, considering travel times and kid-friendly amenities."
-    user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
-    metrics: __all__
+#  family_weekend:
+#    name: "The Adventurous Family from Chicago"
+#    llm_name: gpt-3.5-turbo
+#    temperature: 0.7
+#    description: "You're a family of four (two adults and two children) based in Chicago looking to plan an exciting, yet relaxed weekend getaway outside the city. The objective is to explore a new environment that is kid-friendly and offers a mix of adventure and downtime."
+#    expectation: "A balanced travel schedule that combines fun activities suitable for children and relaxation opportunities for the entire family, considering travel times and kid-friendly amenities."
+#    user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
+#    metrics: __all__
+#
+#  retired_couple:
+#    name: "Retired Couple Exploring Berlin"
+#    llm_name: gpt-3.5-turbo
+#    temperature: 0.7
+#    description: "You're a retired couple from the US, wanting to explore Berlin and soak in its rich history and culture over a 10-day vacation. You’re looking for a mixture of sightseeing, cultural experiences, and leisure activities, with a comfortable pace suitable for your age."
+#    expectation: "A comprehensive travel plan that provides a relaxed pace, ensuring enough time to explore and enjoy each location, and includes historical and cultural experiences. It should also consider comfort and accessibility."
+#    user_knowledge_about_app: "The app accepts text input detailing travel requirements (i.e., destination, preferences, duration, and a brief description of travelers) and returns a well-organized travel itinerary tailored to those specifics."
+#    metrics: __all__
 
-  retired_couple:
-    name: "Retired Couple Exploring Berlin"
-    llm_name: gpt-3.5-turbo
-    temperature: 0.7
-    description: "You're a retired couple from the US, wanting to explore Berlin and soak in its rich history and culture over a 10-day vacation. You’re looking for a mixture of sightseeing, cultural experiences, and leisure activities, with a comfortable pace suitable for your age."
-    expectation: "A comprehensive travel plan that provides a relaxed pace, ensuring enough time to explore and enjoy each location, and includes historical and cultural experiences. It should also consider comfort and accessibility."
-    user_knowledge_about_app: "The app accepts text input detailing travel requirements (i.e., destination, preferences, duration, and a brief description of travelers) and returns a well-organized travel itinerary tailored to those specifics."
-    metrics: __all__
-
-metrics:    # metrics for every users
-  tpas:
-    description: "TPAS - The Travel Plan Accuracy Score. This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output, well-scheduled travel plan and nothing else. The TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating non-accurate result."
+metrics:
+  tdsas:
+    definition: "TDSAS - The Travel Day Schedule Accuracy Score. On a scale from 0 to 100, where 100 symbolizes a theoretically perfect, but practically unattainable, travel schedule, and 0 signifies content unrelated or erroneous to the intended travel schedule."
 
 prompts:
   smart-prompt:
@@ -49,26 +138,26 @@ simulations:
     users: __all__
     llm_name: gpt-3.5-turbo
     temperature: 0.7
-    size: 5
+    size: 100
     chat_mode: true
     quality_threshold: 80
 
-  mid-prompt-test:
-    prompt: simple-prompt
-    users: __all__
-    llm_name: gpt-3.5-turbo
-    temperature: 0.7
-    size: 5
-    chat_mode: true
-    quality_threshold: 80
+#  mid-prompt-test:
+#    prompt: simple-prompt
+#    users: __all__
+#    llm_name: gpt-3.5-turbo
+#    temperature: 0.7
+#    size: 5
+#    chat_mode: true
+#    quality_threshold: 80
+#
+#  wrong-prompt-test:
+#    prompt: wrong-prompt
+#    users: __all__
+#    llm_name: gpt-3.5-turbo
+#    temperature: 0.7
+#    size: 5
+#    chat_mode: true
+#    quality_threshold: 80
 
-  wrong-prompt-test:
-    prompt: wrong-prompt
-    users: __all__
-    llm_name: gpt-3.5-turbo
-    temperature: 0.7
-    size: 5
-    chat_mode: true
-    quality_threshold: 80
-
-include_custom_spelltest_simulations: true
+#include_custom_spelltest_simulations: true

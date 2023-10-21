@@ -45,6 +45,7 @@ def setup_manager_chat():
         synthetic_user_persona_manager=user_chat_manager,
         llm_name_default=llm_name,
     )
+    manager.initialize_evaluation()
     return manager
 
 
@@ -83,6 +84,7 @@ def setup_manager_completion():
         synthetic_user_persona_manager=user_completion_manager,
         llm_name_default=llm_name,
     )
+    manager.initialize_evaluation()
     return manager
 
 

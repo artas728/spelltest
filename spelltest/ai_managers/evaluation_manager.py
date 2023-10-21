@@ -36,16 +36,13 @@ class EvaluationManager(EvaluationManagerBase):
         self.llm_name_accuracy = llm_name_accuracy if llm_name_accuracy else llm_name_default
         self.openai_api_key = openai_api_key
         self.synthetic_user_persona_manager = synthetic_user_persona_manager
-
         self.perfect_chat_response_key = "response"
 
     def initialize_evaluation(self):
-        self.cost_tracker_layer = CostCalculationTracer()
-        self.synthetic_user_persona_manager.set_cost_tracker_layer()
+        self.enable_cost_tracker_layer()
         self._init_perfect_chain()
         self._init_rationale_chain()
         self._init_accuracy_chain()
-
 
     def _init_perfect_chain(self):
         perfect_llm = OpenAI(openai_api_key=self.openai_api_key,
@@ -91,7 +88,13 @@ class EvaluationManager(EvaluationManagerBase):
         self.rationale_prompt = TracedPromptTemplate(
             template=load_prompt("evaluation/rationale.txt.jinja2"),
             template_format="jinja2",
-            input_variables=["ACCURACY_DEFINITION", "USER_EXPECTATION", "REAL_RESULT", "PERFECT_RESULT"],
+            input_variables=[
+                 "ACCURACY_DEFINITION",
+                 "USER_EXPECTATION",
+                 "ENVIRONMENT_AWARENESS",
+                 "REAL_RESULT",
+                 # "PERFECT_RESULT"
+                             ],
             alias="Rationale"
         )
         self.rationale_tracing_layer = PromptelligenceTracer(prompt=self.rationale_prompt)
@@ -110,12 +113,12 @@ class EvaluationManager(EvaluationManagerBase):
         self.accuracy_chain = CustomLLMChain(llm=accuracy_llm, prompt=self.accuracy_prompt)
 
     async def evaluate_chat(self, chat_history, user_persona_manager) -> List[EvaluationResult]:
-        self.perfect_chat_history = await self._generate_perfect_chat(chat_history)
-        return await self._evaluate(chat_history, self.perfect_chat_history)
+        # self.perfect_chat_history = await self._generate_perfect_chat(chat_history)
+        return await self._evaluate(chat_history)
 
     async def evaluate_raw_completion(self, prompt, completion, user_persona_manager) -> List[EvaluationResult]:
-        self.perfect_completion = await self._generate_perfect_completion(prompt, completion)
-        return await self._evaluate("USER:\n"+prompt.text+completion.text, "\nAI:\n"+prompt.text+self.perfect_completion.text)
+        # self.perfect_completion = await self._generate_perfect_completion(prompt, completion)
+        return await self._evaluate("USER:\n"+prompt.text+completion.text)
 
     async def _generate_perfect_chat(self, chat_history: List[Message]) -> List[Message]:
         re_ask_user_manager = False
@@ -164,17 +167,17 @@ class EvaluationManager(EvaluationManagerBase):
             run_id=str(response["__run"].run_id)
         )
 
-    async def _evaluate(self, chat_history, perfect_chat_history):
+    async def _evaluate(self, chat_history):
         evaluations = []
         for metric_definition in self.metric_definitions:
-            evaluations.append(await self._evaluate_single(chat_history, perfect_chat_history, metric_definition))
+            evaluations.append(await self._evaluate_single(chat_history, metric_definition))
         return evaluations
 
-    async def _evaluate_single(self, chat_history, perfect_chat_history, metric_definition, sleep_time_if_error=DEFAULT_SLEEP_TIME_IF_ERROR):
+    async def _evaluate_single(self, chat_history, metric_definition, sleep_time_if_error=DEFAULT_SLEEP_TIME_IF_ERROR):
         try:
-            rationale_input, rationale_output = await self._rationale(chat_history, perfect_chat_history,
+            rationale_input, rationale_output = await self._rationale(chat_history,
                                                                       metric_definition)
-            accuracy, accuracy_deviation = await self._accuracy(rationale_input + rationale_output)
+            accuracy, accuracy_deviation = await self._accuracy(rationale_output)
             return EvaluationResult(
                 metric=metric_definition,
                 accuracy=accuracy,
@@ -183,9 +186,10 @@ class EvaluationManager(EvaluationManagerBase):
             )
         except openai.error.RateLimitError:
             # TODO: add log
+            print(f"openai.error.RateLimitError, {sleep_time_if_error=}")
             if sleep_time_if_error is not None:
                 await asyncio.sleep(sleep_time_if_error)
-                return await self._evaluate_single(chat_history, perfect_chat_history,  metric_definition, sleep_time_if_error*2)
+                return await self._evaluate_single(chat_history, metric_definition, sleep_time_if_error*2)
             raise openai.error.RateLimitError
 
     async def _accuracy(self, all_simulation_text):
@@ -208,18 +212,33 @@ class EvaluationManager(EvaluationManagerBase):
         accuracy_deviation = calculate_deviation_factor(quality_evaluations)
         return accuracy, accuracy_deviation
 
-    async def _rationale(self, chat_history, perfect_chat_history, metric_definition):
+    async def _rationale(self, chat_history, metric_definition):
         kwargs = dict(
             ACCURACY_DEFINITION=metric_definition.definition,
             USER_EXPECTATION=self.synthetic_user_persona_manager.user.params.expectation,
+            ENVIRONMENT_AWARENESS=self.synthetic_user_persona_manager.user.params.user_knowledge_about_app,
             REAL_RESULT=chat_history,
-            PERFECT_RESULT=perfect_chat_history,
+            # PERFECT_RESULT=perfect_chat_history,
         )
         input_text = self.rationale_chain.prompt.format_prompt(**kwargs).text
-        output_expectation = await self.rationale_chain.arun(
+        rationale = await self.rationale_chain.arun(
             **kwargs,
             callbacks=[
                 self.rationale_tracing_layer, self.cost_tracker_layer
             ],
         )
-        return input_text, output_expectation["text"]
+        return input_text, rationale["text"]
+
+    def enable_cost_tracker_layer(self):
+        self.cost_tracker_layer = CostCalculationTracer()
+        try:
+            self.synthetic_user_persona_manager.set_cost_tracker_layer()
+        except:
+            pass
+
+    def disable_cost_tracker_layer(self):
+        self.cost_tracker_layer = None
+        try:
+            self.synthetic_user_persona_manager.cost_tracker_layer = None
+        except:
+            pass

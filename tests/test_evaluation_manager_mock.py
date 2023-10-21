@@ -1,18 +1,20 @@
 import os
 import uuid
 from typing import List
-import uuid
 import pytest
 import openai
+from rich.console import Console
 from unittest.mock import Mock, patch, AsyncMock
 from spelltest.ai_managers.evaluation_manager import EvaluationManager, Message, MessageType
-from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.tracing.cost_calculation_tracing import CostCalculationManager
 from spelltest.ai_managers.raw_completion_manager import CustomLLMChain
 from langchain.llms.fake import FakeListLLM
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
+console = Console()
+cost_calculation_manager = CostCalculationManager(console=console)
 tracing = PromptelligenceClient(ignore=IGNORE_DATA_COLLECTING)
-
 @pytest.fixture
 def setup_manager():
     manager = EvaluationManager(
@@ -21,14 +23,9 @@ def setup_manager():
         synthetic_user_persona_manager=Mock(),
         llm_name_default='llm_default',
     )
+    manager.initialize_evaluation()
     manager.perfect_chat_response_key = "text"
     return manager
-
-@pytest.mark.asyncio
-async def test_init_perfect_chain(setup_manager):
-    setup_manager._init_perfect_chain()
-    assert setup_manager.perfect_chat_chain is not None
-    assert setup_manager.perfect_completion_chain is not None
 
 @pytest.mark.asyncio
 async def test_init_rationale_chain(setup_manager):
@@ -39,22 +36,6 @@ async def test_init_rationale_chain(setup_manager):
 async def test_init_accuracy_chain(setup_manager):
     setup_manager._init_accuracy_chain()
     assert setup_manager.accuracy_chain is not None
-
-@pytest.mark.asyncio
-async def test_generate_perfect_chat(setup_manager):
-    mock_message = Message(author=MessageType.USER, text='text', run_id='run_id')
-    with patch.object(setup_manager, '_generate_perfect_chat_message', new_callable=AsyncMock) as mock_generate_message:
-        mock_generate_message.return_value = mock_message
-        result = await setup_manager._generate_perfect_chat([mock_message])
-        assert len(result) == 1
-
-@pytest.mark.asyncio
-async def test_generate_perfect_completion(setup_manager):
-    with patch.object(setup_manager, '_generate_perfect_completion', new_callable=AsyncMock) as mock_generate_completion:
-        mock_message = Message(author=MessageType.USER, text='text', run_id='run_id')
-        await setup_manager._generate_perfect_completion(mock_message, mock_message)
-        mock_generate_completion.assert_awaited_once_with(mock_message, mock_message)
-
 
 @pytest.mark.asyncio
 async def test_accuracy_calculation(setup_manager):
@@ -99,31 +80,6 @@ async def test_perfect_completion(setup_manager):
     assert perfect_message.text == 'bla bla bla bla'
     assert perfect_message.author == MessageType.ASSISTANT
 
-@pytest.mark.asyncio
-async def test_perfect_chat_message(setup_manager):
-    responses = ["bla bla bla bla", "bla bla bla bla", "bla bla bla bla"]
-    llm = FakeListLLM(responses=responses, model_name=setup_manager.llm_name_perfect)
-    setup_manager.perfect_chat_chain = CustomLLMChain(llm=llm, prompt=setup_manager.perfect_chat_prompt)
-    chat_history = [
-        Message(
-            author=MessageType.USER,
-            text="text"
-        ),
-        Message(
-            author=MessageType.ASSISTANT,
-            text="text2"
-        )
-    ]
-    perfect_message: Message = await setup_manager._generate_perfect_chat_message(
-        Message(
-            author=MessageType.USER,
-            text="text3"
-        ),
-        chat_history
-    )
-
-    assert perfect_message.text == 'bla bla bla bla'
-    assert perfect_message.author == MessageType.ASSISTANT
 
 
 @pytest.mark.asyncio
@@ -154,28 +110,8 @@ async def test_evaluate(setup_manager):
     rationale_llm = FakeListLLM(responses=rationale_responses, model_name=setup_manager.llm_name_rationale)
     setup_manager.rationale_chain = CustomLLMChain(llm=rationale_llm, prompt=setup_manager.rationale_prompt)
 
-    result = await setup_manager._evaluate('chat_history', 'perfect_chat_history')
+    result = await setup_manager._evaluate('chat_history')
     for simulation in result:
         assert simulation.rationale == 'rationale'
         assert simulation.accuracy == 0.87
         assert simulation.accuracy_deviation == 0.0
-
-
-@pytest.mark.asyncio
-async def test_generate_perfect_chat_message(setup_manager):
-    with patch.object(setup_manager, '_generate_perfect_chat_message', new_callable=AsyncMock) as mock_generate_message:
-        mock_message = Message(author=MessageType.USER, text='text', run_id='run_id')
-        await setup_manager._generate_perfect_chat_message(mock_message, [mock_message])
-        mock_generate_message.assert_awaited_once_with(mock_message, [mock_message])
-
-
-@pytest.mark.asyncio
-async def test_generate_perfect_chat_with_different_message_types(setup_manager):
-    mock_user_message = Message(author=MessageType.USER, text='user_text', run_id='run_id')
-    mock_assistant_message = Message(author=MessageType.ASSISTANT, text='assistant_text', run_id='run_id')
-
-    with patch.object(setup_manager, '_generate_perfect_chat_message', new_callable=AsyncMock) as mock_generate_message:
-        mock_generate_message.return_value = mock_assistant_message
-        result = await setup_manager._generate_perfect_chat([mock_user_message, mock_assistant_message])
-
-        assert len(result) == 2  # Original + generated message

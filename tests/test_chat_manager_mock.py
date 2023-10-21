@@ -4,7 +4,7 @@ from spelltest.entities.synthetic_user import SyntheticUser, SyntheticUserParams
 from spelltest.entities.managers import Message, MessageType
 from spelltest.ai_managers.chat_manager import SyntheticUserChatManager, AIModelDefaultChatManager, \
     CustomConversationChain
-from spelltest.tracing.promtelligence_tracing import PromptelligenceClient
+from spelltest.ai_managers.tracing.promtelligence_tracing import PromptelligenceClient
 from langchain.llms.fake import FakeListLLM
 
 IGNORE_DATA_COLLECTING = bool(os.environ.get("IGNORE_DATA_COLLECTING", "True"))
@@ -24,7 +24,7 @@ async def test_initialize_conversation_synthetic_user():
 
     user = SyntheticUser(name="name", params=user_params, metrics=[MetricDefinition(name="metric1", definition="definition1")])
     manager = SyntheticUserChatManager(user, "test_key")
-
+    manager.set_cost_tracker_layer()
     # Mocking chain
     responses = ["Action: Python REPL\nAction Input: print(2 + 2)", "Final Answer: 4", "Bla bla bla"]
     llm = FakeListLLM(responses=responses, model_name=user.params.llm_name)
