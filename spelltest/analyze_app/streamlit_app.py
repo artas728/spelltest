@@ -44,6 +44,7 @@ def main():
         show_simulations_button = st.sidebar.button("Show Simulations")
         if show_simulations_button:
             with st.spinner("Uploading simulations..."):
+                st.text(f"file: {project}/{simulation_session}")
                 # Build the path to the chosen JSON file
                 json_path = os.path.join(project, simulation_session)  # Directly using 'project' as base path
 
