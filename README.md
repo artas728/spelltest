@@ -151,7 +151,7 @@ A prompt that represent standards or criteria used to evaluate and score the res
 
 ### Learn More
 
-For more in-depth information, visit our [documentation](#).
+Documentation is coming.
 
 ### Example Templates
 
