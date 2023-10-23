@@ -2,44 +2,183 @@
 
 ## QA for LLM
 
-Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an Evaluation AI to evaluate these responses.
+Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an evaluation technique to evaluate these responses automatically(but still requires human supervision).
 
-### Project philosophy
+#### 1. Describe your simulation in `spellforge.yaml` file:
+
+```yaml
+
+    project_name: ...
+    
+    # describe users
+    users:
+       ...
+    
+    # describe quality metrics 
+    metrics:  
+      ...
+    
+    # describe prompts
+    prompts:    
+       ...
+        
+    # finally describe simulations
+    simulations:
+       ...
+
+
+```
+
+
+#### 2. Run simulations:
+
+![Spellforge general schema](images/ezgif.com-terminal.gif)
+
+#### 3. Analyze results:
+
+![Spellforge general schema](images/ezgif.com-optimize.gif)
+
+## Table of Contents
+- [Spelltest: Simulation Framework for LLM Based Applications](#spelltest-simulation-framework-for-llm-based-applications)
+  - [QA for LLM](#qa-for-llm)
+- [Why Choose Spelltest?](#why-choose-spelltest)
+- [Important Notices for Users](#important-notices-for-users)
+  - [Project Maturity Warning](#project-maturity-warning)
+  - [Cost Expectations](#cost-expectations)
+- [Project Philosophy](#project-philosophy)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+    - [Synthetic Users](#synthetic-users)
+    - [Quality Metrics](#quality-metrics)
+    - [App's Prompts](#apps-prompts)
+    - [Simulations](#simulations)
+  - [Running Simulations](#running-simulations)
+  - [Analysis](#analysis)
+- [Integration Into Release Pipeline](#integration-into-release-pipeline)
+- [Key Concepts](#key-concepts)
+  - [Synthetic Users](#synthetic-users-1)
+  - [Metrics](#metrics-1)
+
+## Why Choose Spelltest?
+
+- **Assured Quality**: Simulate user interactions for optimum responses.
+
+
+- **Efficiency & Savings**: Save on manual testing costs.
+
+
+- **Smooth Workflow Integration**: Fits seamlessly into your development process.
+
+## Important Notices for Users
+
+### Project Maturity Warning
+
+Please be aware that this is a very early version of Spelltest. As such, it has not yet been extensively tested in diverse environments and use-cases. By deciding to use this version, you accept that you are using the Spelltest framework at your own risk. We highly encourage users to report any issues or bugs they encounter to assist in the improvement of the project.
+
+### Cost Expectations
+
+Regarding the operational costs, it's important to note that running simulations with Spelltest incurs charges based on the usage of the OpenAI API. There is no cost estimations or budget limit at the moment.  For context, running a batch of 100 simulations may cost approximately $0.7 to $1.8 (gpt-3.5-turbo), depending on several factors including the specific LLM and the complexity of the simulations.
+
+Given these costs, we highly recommend starting with a smaller number of simulations to both keep your initial costs down and help you estimate future expenses better. As you become more familiar with the framework and its cost implications, you can adjust the number of simulations according to your budget and needs.
+
+Remember, the goal of Spelltest is to ensure high-quality responses from LLMs while remaining as cost-effective as possible in your AI development and testing process.
+
+
+
+## Project philosophy
 
 ![Spellforge general schema](images/spellforge_general_schema.png)
  
-Spelltest simulates and evaluates LLM responses using synthetic users providing a quality score from 0 to 100.  Think about it like a dress rehearsal before your app meets real users. Spelltest supports chat & completion modes.
+Spelltest takes a distinctive approach to quality assurance. By using synthetic user personas, we not only simulate interactions but also capture unique user expectations, providing a context-rich environment for testing. This depth of context allows us to evaluate the quality of LLM responses in a manner that closely mirrors real-world applications.
+
+The result? A quality score ranging from 0.0 to 1.0, acting as a comprehensive dress rehearsal before your app meets its real users. Whether in chat or completion mode, Spelltest ensures that the LLM responses align closely with user expectations, enhancing overall user satisfaction.
 
 
-### Why Spelltest?
+## Getting Started
 
-- **Quality Assurance**: By simulating how users interact with your LLM-based application, Spelltest ensures your application provides high-quality responses before it interacts with real users.
-  
+### Installation 
 
-- **Cost-effective & Efficient**: No need for manual, costly testing or semi-automated expensive methods.
-  
-
-- **Seamless Integration**: It easily fits into your current development process.
-
-
-
-### Getting Started
-
-1. **Installation**: Install the framework using pip.
+Install the framework using pip:
 
    ```bash
    pip install spelltest
    ```
+### Configuration
 
-2. **Describe synthetic users, metrics and prompt for simulation**: Create a `.spelltest.yaml` file in your repository. Below is an example configuration for a travel scheduler AI app:
+The `.spellforge.yaml` is central to Spelltest, containing synthetic user profiles, metrics, prompts, and simulations. Below is a breakdown of its structure:
 
-   ```yaml
+#### Synthetic Users
+Synthetic users mimic real-world users, each with a unique background, expectation, and understanding of the app. The configuration for synthetic users includes:
+- **Sub Prompts**: These are descriptive elements providing context to the user profile. They include:
+  - `description`: A brief about the synthetic user.
+  - `expectation`: What the user expects from the interaction.
+  - `user_knowledge_about_app`: Level of familiarity with the app.
+
+   Each synthetic user also has a:
+  - `name`: The identifier for the synthetic user.
+  - `llm_name`: The LLM models to use(tested on OpenAI models only).
+  - `temperature`: ...
+
+
+Example of synthetic user config:
+```yaml
+...
+    nomad:
+      name: "Busy Nomad in Seattle"
+      llm_name: gpt-3.5-turbo
+      temperature: 0.7
+      description: "You're a very busy nomad who struggles with planning. You're moved to Seattle and looking at how to spend your first Saturday exploring the city"
+      expectation: "Well-planned objective, detailed, and comprehensive schedule that meets user's requirements"
+      user_knowledge_about_app: "The app receives text input about travel requirements (i.e., place, preferences, short description of the family and their interests) and returns a travel schedule that accommodates all family members’ needs and interests."
+      metrics: __all__
+...
+```
+
+#### Quality Metrics
+Metrics are used to evaluate and score the LLM's responses. Each metric contains a sub prompt `description` which provides context on what the metric assesses.
+
+Example of simple metric config:
+```yaml
+...
+    metrics:  
+      accuracy:
+        description: "Accuracy"
+    
+...
+```
+
+Example of complex/custom metric config:
+```yaml
+...
+    metrics:  
+      tpas:
+        description: "TPAS - The Travel Plan Accuracy Score. This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output, well-scheduled travel plan and nothing else. The TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating non-accurate result."
+    
+...
+```
+
+#### App's Prompts
+Prompts are questions or tasks that the app poses. These are used in simulations to test the LLM's ability to generate suitable responses. Each prompt is defined with a `description` and the actual `prompt` text or task.
+
+```yaml
+...
+prompts:
+  book_flight:
+    file: book-flight-prompt.txt
+...
+```
+#### Simulations
+Simulations specify the testing scenario. Key elements include `prompt`, `users`, `llm_name`, `temperature`, `size`, `chat_mode`, and `quality_threshold`.
+
+
+```yaml
 
     project_name: "Travel schedule app"
     
     # describe users
     users:
-       nomad:    # an example if synthetic user case
+       nomad:
          name: "Busy Nomad in Seattle"
          llm_name: gpt-3.5-turbo
          temperature: 0.7
@@ -84,26 +223,16 @@ Spelltest simulates and evaluates LLM responses using synthetic users providing 
          llm_name: gpt-3.5-turbo
          temperature: 0.7
          size: 5
-         chat_mode: true
+         chat_mode: true    # completion mode if `false`
          quality_threshold: 80
 
 
-   ```
+```
    
-    Full configuration with prompt files is [here](https://github.com/artas728/spelltest/blob/first-release/tests/paid/yaml_configs/case_travel_app/.spellforge.yaml).
+Full configuration with prompt files is [here](https://github.com/artas728/spelltest/blob/first-release/tests/paid/yaml_configs/case_travel_app/.spellforge.yaml).
 
 
-3. **Run the simulation**: 
-
-   ```bash
-   spelltest simulate
-   ```
-
-4. **Analysis**: Check the results of the simulation.
-
-   ```bash
-   spelltest analyze
-   ```
+### Running Simulations
 
 
 ⚠️ ⚠️ ⚠️  **Important Warnings**  ⚠️ ⚠️ ⚠️
@@ -115,24 +244,44 @@ Spelltest simulates and evaluates LLM responses using synthetic users providing 
 ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ 
 
 
+   ```bash
+   export OPENAI_API_KEYS=<your api keys>
+   spelltest
+   ```
+
+
+#### Analysis
+Check the results of the simulation.
+
+   ```bash
+   spelltest analyze
+   ```
+
+
+### Integration Into Release Pipeline
+
+Integrating Spelltest into your release pipeline enhances your deployment strategy by incorporating consistent, automated testing. This crucial step ensures that your LLM-based applications maintain a high standard of quality by systematically simulating and evaluating user interactions before any release. This practice can save significant time, reduce manual error, and provide key insights into how changes or new features will affect user experience.
+```
+Integration documentation is coming.
+```
 
 ### Key Concepts
 
-**Synthetic Users**
+#### Synthetic Users
 
 These are simulating real-user interactions with specific characteristics and expectations.
 
-   - **User Background** (`description` field in `.spelltest.yaml`): A prompt that provides an overview of who this synthetic user is and the problems they want to solve using the app, e.g., a traveler managing their schedule.
+   - **User Background** (`description` field in `.spellforge.yaml`): A sub prompt that provides an overview of who this synthetic user is and the problems they want to solve using the app, e.g., a traveler managing their schedule.
 
-   - **User Expectation** (`expectation` field): A prompt that defines what the synthetic user anticipates as a successful interaction or solution from using the app.
+   - **User Expectation** (`expectation` field): A sub prompt that defines what the synthetic user anticipates as a successful interaction or solution from using the app.
 
-   - **Environment Awareness** (`user_knowledge_about_app` field): A prompt that ensures the synthetic user understands the application’s context, ensuring realistic testing scenarios.
+   - **Environment Awareness** (`user_knowledge_about_app` field): A sub prompt that ensures the synthetic user understands the application’s context, ensuring realistic testing scenarios.
 
-**Metrics**
+#### Metrics
 
-A prompt that represent standards or criteria used to evaluate and score the responses generated by the LLM in the simulations. Metrics can range from general measurements to more application-specific, custom metrics.
+A sub prompt that represent standards or criteria used to evaluate and score the responses generated by the LLM in the simulations. Metrics can range from general measurements to more application-specific, custom metrics.
 
-   **General Metric Examples**:
+   General Metric Examples:
    
    - **Semantic Similarity**: Measures how closely the provided answer resembles an expected answer in terms of meaning.
    
@@ -140,7 +289,7 @@ A prompt that represent standards or criteria used to evaluate and score the res
    
    - **Structural Similarity**: Compares the structure and format of the generated response to a predefined standard or expected output.
    
-   **More Custom Metric Examples**:
+   More Custom Metric Examples:
    
    - **TPAS (Travel Plan Accuracy Score)**: "This metric measures the accuracy of the generated response by evaluating the inclusion of the expected output and the quality of the proposed travel plan. TPAS is a numerical value between 0 and 100, with 100 representing a perfect match to the expected output and 0 indicating a non-accurate result."
    
@@ -152,10 +301,6 @@ A prompt that represent standards or criteria used to evaluate and score the res
 ### Learn More
 
 Documentation is coming.
-
-### Example Templates
-
-- For examples of user and metric definitions to help you get started, please check [User & Metric Examples](#).
 
 ---
 
