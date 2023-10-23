@@ -59,8 +59,6 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
 - [Key Concepts](#key-concepts)
   - [Synthetic Users](#synthetic-users-1)
   - [Metrics](#metrics-1)
-- [FAQs](#faqs)
-
 
 ## Why Choose Spelltest?
 
