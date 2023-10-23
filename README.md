@@ -4,6 +4,8 @@
 
 Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an evaluation technique to evaluate these responses automatically(but still requires human supervision).
 
+### How it works:
+
 #### 1. Describe your simulation in `spellforge.yaml` file:
 
 ```yaml
