@@ -1,4 +1,4 @@
-# Spelltest: Bot-to-Bot Testing for LLM Based Applications
+# Spelltest: AI-to-AI Testing for LLM Based Applications
 
 [![Downloads](https://static.pepy.tech/badge/spelltest)](https://pepy.tech/project/spelltest)
 
