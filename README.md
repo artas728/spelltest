@@ -1,6 +1,10 @@
-# Spelltest: Simulation Framework for LLM Based Applications
+# Spelltest: Bot-to-Bot Testing for LLM Based Applications
 
-## QA for LLM
+
+🌟 *If you find this project useful, please consider giving it a star! Your support motivates me to keep improving it!* 🌟
+
+
+## Bot-to-Bot Testing for Quality Assurance
 
 Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an evaluation technique to evaluate these responses automatically(but still requires human supervision).
 
@@ -20,7 +24,7 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
     metrics:  
       ...
     
-    # describe prompts
+    # describe prompts of your LLM app
     prompts:    
        ...
         
@@ -248,7 +252,7 @@ Full configuration with prompt files is [here](https://github.com/artas728/spell
 
    ```bash
    export OPENAI_API_KEYS=<your api keys>
-   spelltest
+   spelltest --config_file .spellforge.yaml
    ```
 
 
@@ -256,7 +260,7 @@ Full configuration with prompt files is [here](https://github.com/artas728/spell
 Check the results of the simulation.
 
    ```bash
-   spelltest analyze
+   spelltest --analyze
    ```
 
 
@@ -264,7 +268,7 @@ Check the results of the simulation.
 
 Integrating Spelltest into your release pipeline enhances your deployment strategy by incorporating consistent, automated testing. This crucial step ensures that your LLM-based applications maintain a high standard of quality by systematically simulating and evaluating user interactions before any release. This practice can save significant time, reduce manual error, and provide key insights into how changes or new features will affect user experience.
 ```
-Integration documentation is coming.
+Integration documentation is coming..
 ```
 
 ### Key Concepts
@@ -300,11 +304,6 @@ A sub prompt that represent standards or criteria used to evaluate and score the
 
 ---
 
-### Learn More
-
-Documentation is coming.
-
----
 
 **Make your LLM-based application better with Spelltest!**
 
