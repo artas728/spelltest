@@ -5,7 +5,7 @@
 🌟 *If you find this project useful, please consider giving it a star! Your support motivates me to keep improving it!* 🌟
 
 
-## Bot-to-Bot Testing for Quality Assurance
+## AI-to-AI Testing for Quality Assurance
 
 Today's AI-driven applications largely depend on Large Language Models (LLMs) like GPT-4 to deliver innovative solutions. However, ensuring that they provide relevant and accurate responses in every situation is a challenge. Spelltest addresses this by simulating LLM responses using synthetic user personas and an evaluation technique to evaluate these responses automatically(but still requires human supervision).
 
