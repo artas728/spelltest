@@ -178,7 +178,7 @@ class ProcessSimulationResult:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(asdict(self.simulation_job_data), f, ensure_ascii=False, indent=4)
         print(f"Saved in {file_path} (project '{self.project_name}'), \n"
-              f"to get more details open the file within spelltest browser, command `spelltest analyze`")
+              f"to get more details open the file within spelltest browser, command `spelltest --analyze`")
 
 
 

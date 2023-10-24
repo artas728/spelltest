@@ -1,5 +1,6 @@
 # Spelltest: Bot-to-Bot Testing for LLM Based Applications
 
+[![Downloads](https://static.pepy.tech/badge/spelltest)](https://pepy.tech/project/spelltest)
 
 🌟 *If you find this project useful, please consider giving it a star! Your support motivates me to keep improving it!* 🌟
 
