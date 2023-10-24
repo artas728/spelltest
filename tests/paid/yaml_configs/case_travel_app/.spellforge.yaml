@@ -123,12 +123,12 @@ metrics:
 
 prompts:
   smart-prompt:
-    file: ./smart-prompt
+    file: ./tests/paid/yaml_configs/case_travel_app/smart-prompt
     # "template" instead of "file" to pass prompt directly
   simple-prompt:
-    file: ./simple-prompt
+    file: ./tests/paid/yaml_configs/case_travel_app/simple-prompt
   wrong-prompt:
-    file: ./wrong-prompt
+    file: ./tests/paid/yaml_configs/case_travel_app/wrong-prompt
 
 
 
