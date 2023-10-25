@@ -6,9 +6,10 @@ with open('requirements.txt') as f:
 
 setup(
     name='spelltest',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(),
-    install_requires=required,  # Using the read requirements
+    install_requires=required,
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'spelltest = spelltest.cli:main',
