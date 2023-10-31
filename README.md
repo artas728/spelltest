@@ -268,9 +268,69 @@ Check the results of the simulation.
 ### Integration Into Release Pipeline
 
 Integrating Spelltest into your release pipeline enhances your deployment strategy by incorporating consistent, automated testing. This crucial step ensures that your LLM-based applications maintain a high standard of quality by systematically simulating and evaluating user interactions before any release. This practice can save significant time, reduce manual error, and provide key insights into how changes or new features will affect user experience.
-```
-Integration documentation is coming..
-```
+
+### Continuous Integration (CI) with Spelltest and OpenAI API
+
+This guide will walk you through the process of setting up and automating continuous integration for your projects.
+
+#### Prerequisites
+
+Before you get started, make sure you have the following prerequisites in place:
+
+1. A GitHub repository containing your project.
+
+2. Access to SpellForge with an API key. If you don't have one, you can obtain it from the SpellForge website.
+
+3. An OpenAI API key for using OpenAI services. If you don't have one, you can obtain it from the OpenAI website.
+
+#### Step 1: Create and Configure `.spellforge.yaml`
+
+Create a `.spellforge.yaml` file in the root directory of your project. This file will contain the instructions for Spelltest.
+
+
+#### Step 2: Create .github/workflows/.spelltest.yaml
+
+  Create a GitHub Actions workflow file, e.g., .github/workflows/.spelltest.yaml, to automate SpellForge testing. Insert the following code into this file:
+
+   ```yaml
+   # .spelltest.yaml
+   name: Spelltest CI
+
+   on:
+     push:
+       branches: [ "main" ]
+
+   env:
+     SPELL_CONFIG_PATH: ${{ secrets.SPELL_CONFIG_PATH }}
+     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+     SPELLFORGE_API_KEY: ${{ secrets.SPELLFORGE_API_KEY }}
+
+   jobs:
+     test:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         - name: Install SpellTest library
+           run: pip install spelltest
+         - name: Run tests
+           run: spelltest --config_file $SPELL_CONFIG_PATH
+   ```
+This workflow is triggered on every push to the main branch and will run your SpellForge tests.
+
+#### Step 3: GitHub Repository Settings
+
+1. Go to your GitHub repository and navigate to the "Settings" tab.
+
+2. Under "Secrets" add two new secrets:
+
+   ```OPENAI_API_KEY```: Set this secret to your OpenAI API key.
+
+   ```SPELLFORGE_API_KEY```: Set this secret to your SpellForge API key.
+
+3. Add a GitHub environment variable:
+
+   ```SPELL_CONFIG_PATH```: Set this variable to the full path to your .spellforge.yaml file within your repository.
+
 
 ### Key Concepts
 
@@ -307,4 +367,3 @@ A sub prompt that represent standards or criteria used to evaluate and score the
 
 
 **Make your LLM-based application better with Spelltest!**
-
