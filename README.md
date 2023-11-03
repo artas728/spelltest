@@ -11,7 +11,7 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
 
 ### How it works:
 
-#### 1. Describe your simulation in `spellforge.yaml` file:
+#### Step 1: Describe your simulation in `spellforge.yaml` file:
 
 ```yaml
 
@@ -37,11 +37,11 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
 ```
 
 
-#### 2. Run simulations:
+#### Step 2: Run simulations:
 
 ![Spellforge general schema](images/ezgif.com-terminal.gif)
 
-#### 3. Analyze results:
+#### Step 3: Analyze results:
 
 ![Spellforge general schema](images/ezgif.com-optimize.gif)
 
