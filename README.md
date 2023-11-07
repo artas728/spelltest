@@ -45,6 +45,14 @@ Today's AI-driven applications largely depend on Large Language Models (LLMs) li
 
 ![Spellforge general schema](images/ezgif.com-optimize.gif)
 
+## Try it on Google Colab
+
+You can now try this project in a web-based interactive environment via Google Colab! No installation is required.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1wO48BSAO_sa7cPxuSWQ5tu5y4txM8FiR?usp=sharing)
+
+Just click the badge above to get started!
+
 ## Table of Contents
 - [Spelltest: Simulation Framework for LLM Based Applications](#spelltest-simulation-framework-for-llm-based-applications)
   - [QA for LLM](#qa-for-llm)

@@ -1,0 +1,1 @@
+from .yaml_tests import run_from_config
