@@ -68,6 +68,7 @@ class ProcessSimulationResult:
         self.aggregated_metrics = self.calculate_aggregated_metrics()
         self.print_simulation_job_result()
         self.save_simulation_job_result()
+        return self.simulation_job_data
 
     def calculate_aggregated_metrics(self):
         # Initialize sums and accuracy lists
@@ -147,7 +148,7 @@ class ProcessSimulationResult:
                         "text": simulation.message_storage.completion.text,
                         "run_id": simulation.message_storage.completion.run_id
                     }
-        self.simulation_job_data = SimulationJobResult(
+        self.simulation_job_data = asdict(SimulationJobResult(
             project_name=self.project_name,
             aggregated_metrics=self.aggregated_metrics,
             simulations=self.simulations,
@@ -158,7 +159,7 @@ class ProcessSimulationResult:
             reason=self.reason,
             reason_value=self.reason_value,
             status=self.status
-        )
+        ))
         # Retrieve the ID from the dictionary
         test_id = str(uuid.uuid4())
 
@@ -176,7 +177,7 @@ class ProcessSimulationResult:
         # Save the dictionary to a file in JSON format
         file_path = os.path.join(folder_path, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(asdict(self.simulation_job_data), f, ensure_ascii=False, indent=4)
+            json.dump(self.simulation_job_data, f, ensure_ascii=False, indent=4)
         print(f"Saved in {file_path} (project '{self.project_name}'), \n"
               f"to get more details open the file within spelltest browser, command `spelltest --analyze`")
 

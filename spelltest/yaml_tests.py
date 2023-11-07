@@ -13,15 +13,19 @@ def run_yaml_tests(yaml_config_file=None):
         config = parse_config(yaml_config_file)
     else:
         config = parse_config()
+    return run_from_config(config)
+
+def run_from_config(config, prompt_text=None):
     defined_metrics = {
         name: MetricDefinition(name=name, definition=metric["definition"])
         for name, metric in config["metrics"].items()
     }
     for simulation_name, simulation_config in config["simulations"].items():
 
-        prompt_file = config["prompts"][simulation_config["prompt"]]["file"]
-        with open(prompt_file, 'r') as file:
-            prompt_text = file.read()
+        if prompt_text is None:
+            prompt_file = config["prompts"][simulation_config["prompt"]]["file"]
+            with open(prompt_file, 'r') as file:
+                prompt_text = file.read()
 
         user_names = simulation_config["users"]
         if user_names == "__all__":
@@ -62,5 +66,5 @@ def run_yaml_tests(yaml_config_file=None):
             size=simulation_config["size"],
             chat_mode=simulation_config["chat_mode"],
             openai_api_key=os.environ.get("OPENAI_API_KEY"),  # or your way of fetching API key
-            # ... any other config parameter
+            # ... any other config parameters
         )
